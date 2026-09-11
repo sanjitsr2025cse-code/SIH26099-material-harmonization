@@ -8,6 +8,7 @@ from app.harmonization.embeddings import (
 )
 from app.harmonization.matching import MatchDecision, MaterialMatcher
 from app.harmonization.multilingual import MultilingualProcessor
+from app.harmonization.persistence import MaterialRepository, schema_sql
 from app.harmonization.retrieval import InMemoryCosineIndex
 from app.harmonization.service import harmonize_record, harmonize_records
 
@@ -19,6 +20,8 @@ __all__ = [
     "MatchDecision",
     "MaterialMatcher",
     "MultilingualProcessor",
+    "MaterialRepository",
+    "schema_sql",
     "InMemoryCosineIndex",
     "harmonize_record",
     "harmonize_records",

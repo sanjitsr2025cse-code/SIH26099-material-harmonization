@@ -3,11 +3,16 @@
 import os
 from dataclasses import dataclass
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 @dataclass(frozen=True)
 class HarmonizationSettings:
     embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"
-    database_url: str = "postgresql+psycopg://localhost/materials"
+    database_url: str = ""
+    embedding_dimensions: int = 384
     equivalent_threshold: float = 0.82
     review_threshold: float = 0.58
     retrieval_top_k: int = 5
@@ -17,6 +22,9 @@ class HarmonizationSettings:
         return cls(
             embedding_model=os.getenv("EMBEDDING_MODEL", cls.embedding_model),
             database_url=os.getenv("DATABASE_URL", cls.database_url),
+            embedding_dimensions=int(
+                os.getenv("EMBEDDING_DIMENSIONS", cls.embedding_dimensions)
+            ),
             equivalent_threshold=float(
                 os.getenv("MATCH_EQUIVALENT_THRESHOLD", cls.equivalent_threshold)
             ),

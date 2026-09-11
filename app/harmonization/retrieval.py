@@ -1,6 +1,7 @@
 """Top-k vector retrieval adapters."""
 from dataclasses import dataclass, field
 import math
+import re
 from typing import Any, Sequence
 
 @dataclass
@@ -47,9 +48,17 @@ class PgVectorCandidateRetriever:
     def top_k(self, vector: Sequence[float], k: int = 5) -> list[Candidate]:
         query = (f"SELECT record_id, 1 - (embedding <=> :vector) AS score, metadata "
                  f"FROM {self.table} ORDER BY embedding <=> :vector LIMIT :limit")
-        rows = self.connection.execute(query, {"vector": str(list(vector)), "limit": k})
+        from sqlalchemy import text
+
+        rows = self.connection.execute(
+            text(query), {"vector": str(list(vector)), "limit": k}
+        )
         return [Candidate(row[0], float(row[1]), row[2] or {}) for row in rows]
 
 def hnsw_index_sql(table: str = "material_embeddings", column: str = "embedding") -> str:
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", table) or not re.fullmatch(
+        r"[A-Za-z_][A-Za-z0-9_]*", column
+    ):
+        raise ValueError("table and column must be simple SQL identifiers")
     return (f"CREATE INDEX IF NOT EXISTS {table}_{column}_hnsw "
             f"ON {table} USING hnsw ({column} vector_cosine_ops);")

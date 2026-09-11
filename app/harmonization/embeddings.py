@@ -48,7 +48,9 @@ class SentenceTransformerEmbedder:
     """Model is imported and loaded only when the first embedding is requested."""
     def __init__(self, model_name: str | None = None,
                  fallback: Embedder | None = None):
-        self.model_name = model_name or HarmonizationSettings.from_env().embedding_model
+        settings = HarmonizationSettings.from_env()
+        self.model_name = model_name or settings.embedding_model
+        self.expected_dimensions = settings.embedding_dimensions
         self.fallback = fallback or HashingEmbedder()
         self._model = None
 
@@ -66,7 +68,14 @@ class SentenceTransformerEmbedder:
         if model is False:
             return self.fallback.embed(text)
         values = model.encode(text, normalize_embeddings=True)
-        return [float(value) for value in values]
+        vector = [float(value) for value in values]
+        model_dimension = getattr(model, "get_sentence_embedding_dimension", lambda: None)()
+        if model_dimension is not None and len(vector) != self.expected_dimensions:
+            raise ValueError(
+                f"Embedding model returned {len(vector)} dimensions; "
+                f"expected {self.expected_dimensions}"
+            )
+        return vector
 
     def record(self, record_id: str, text: str, metadata: dict[str, Any] | None = None) -> EmbeddingRecord:
         model = self._load()

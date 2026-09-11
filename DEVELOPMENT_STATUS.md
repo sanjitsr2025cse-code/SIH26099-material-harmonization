@@ -56,6 +56,17 @@
 - [x] Optional lazy Streamlit upload/search/review/statistics dashboard.
 - [x] In-memory repositories only; no infrastructure required.
 
+## External PostgreSQL and embedding setup
+
+- [x] Read PostgreSQL credentials from `DATABASE_URL` without storing secrets
+  in the repository.
+- [x] Configure the multilingual Sentence Transformer model and 384-dimensional
+  pgvector storage.
+- [x] Generate the pgvector schema and cosine HNSW index through the existing
+  repository adapter.
+- [ ] Verify schema creation and Top-K retrieval against the user's cloud
+  PostgreSQL/pgvector instance once credentials are supplied.
+
 ## Future phases — Planned, not implemented
 
 - [ ] Persistent source ingestion and provenance.

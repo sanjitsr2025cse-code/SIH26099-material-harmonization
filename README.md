@@ -89,10 +89,22 @@ decision = MaterialMatcher().compare(
 )
 ```
 
-The fallback performs no network access or model download. To enable the
-PostgreSQL adapter install the commented `sqlalchemy` and `psycopg[binary]`
-packages and set `DATABASE_URL`. `sentence-transformers` is similarly
-optional; its model is loaded only on first use and falls back automatically.
+The production configuration uses `sentence-transformers` with
+`paraphrase-multilingual-MiniLM-L12-v2` and a 384-dimensional pgvector column.
+The model is loaded only on first use. The deterministic hashing embedder
+remains available for tests and explicitly offline development.
+
+Set `DATABASE_URL` in a local, untracked `.env` file to your cloud PostgreSQL
+provider's SQLAlchemy URL, for example:
+
+```text
+DATABASE_URL=postgresql+psycopg://USERNAME:PASSWORD@HOST:5432/DATABASE?sslmode=require
+```
+
+Then initialize the extension, table, and HNSW index with
+`MaterialRepository().create_schema()`. The cloud database must have the
+pgvector extension available; this repository does not install or run
+PostgreSQL locally.
 Optional defaults can be configured with `EMBEDDING_MODEL`,
 `MATCH_EQUIVALENT_THRESHOLD`, `MATCH_REVIEW_THRESHOLD`, and
 `RETRIEVAL_TOP_K`.
@@ -120,9 +132,9 @@ run `streamlit run app/product/dashboard.py`.
 ## Planned direction
 
 Later phases may introduce a governed material registry and secure APIs.
-PostgreSQL/pgvector persistence and HNSW retrieval are available as optional
-deployment integrations. Authentication, containerization, orchestration,
-migrations, and CI/CD remain future decisions.
+PostgreSQL/pgvector persistence and HNSW retrieval are configured for the
+external database described above. Authentication, containerization,
+orchestration, migrations, and CI/CD remain future decisions.
 
 See [docs/architecture.md](docs/architecture.md), [AI_CONTEXT.md](AI_CONTEXT.md),
 and [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md) for the project boundaries

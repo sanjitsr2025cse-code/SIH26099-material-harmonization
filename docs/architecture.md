@@ -70,9 +70,10 @@ loads the optional multilingual model lazily and uses hashing when the package
 or model is unavailable. `EmbeddingRecord` preserves source text and metadata.
 
 `InMemoryCosineIndex` is the test adapter. `PgVectorCandidateRetriever` emits
-parameterized top-k pgvector queries, and `persistence.MaterialRepository`
-provides optional SQLAlchemy/psycopg storage. `hnsw_index_sql()` returns the
-explicit HNSW DDL. No database connection is made at import time.
+top-k pgvector queries, and `persistence.MaterialRepository` provides
+SQLAlchemy/psycopg storage configured from `DATABASE_URL`. `create_schema()`
+enables `vector`, creates a fixed-dimension vector column, and creates the
+cosine HNSW index. No database connection is made at import time.
 
 `MaterialMatcher` combines cosine similarity, extracted technical attributes,
 and token terminology. Grade, size, standard, pressure, and voltage conflicts
@@ -85,8 +86,11 @@ Optional model, database, threshold, and retrieval defaults are read from
 environment variables through `HarmonizationSettings`; callers can still
 override them explicitly for tests or tenant-specific behavior.
 
-The test environment intentionally does not download models or require a live
-PostgreSQL instance.
+Production uses `paraphrase-multilingual-MiniLM-L12-v2` (384 dimensions).
+Tests and explicitly offline development can use the deterministic hashing
+embedder instead. A real cloud PostgreSQL URL and a provider with pgvector
+enabled are required to verify the database path; no local PostgreSQL server
+is assumed.
 
 ## Milestone 3 product registry
 

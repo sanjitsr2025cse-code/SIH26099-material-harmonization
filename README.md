@@ -136,6 +136,32 @@ PostgreSQL/pgvector persistence and HNSW retrieval are configured for the
 external database described above. Authentication, containerization,
 orchestration, migrations, and CI/CD remain future decisions.
 
+### 10K validation benchmark
+
+The deterministic offline milestone benchmark generates 10,000 CPSE-style
+records, including duplicate and near-duplicate descriptions, multilingual and
+abbreviated terminology, unit variations, unrelated products, and hard
+attribute near-misses. It uses the existing Pandas pipeline, hashing
+embeddings, in-memory cosine retrieval (the offline analogue of pgvector/HNSW),
+and accepts an injected embedder or `MaterialRepository` for integration
+measurements:
+
+```powershell
+python scripts\benchmark_10k.py
+python scripts\benchmark_10k.py --postgres
+python -m pytest tests\test_benchmark.py
+```
+
+The JSON report includes record count, processing/embedding/database/HNSW/
+matching/total timings, decision counts, canonical groups, duplicate
+reduction, and precision/recall/F1 against generated group labels. The default
+command is deterministic and offline. `--postgres` uses the configured
+`DATABASE_URL`, `MaterialRepository`, pgvector persistence, and the HNSW
+candidate retriever with reproducible 384-dimensional hashing embeddings and
+removes its temporary `cpse-*` rows after reporting. In particular,
+`STEEL BOLT M10 GRADE B` and `STEEL BOLT M10 GRADE C` are explicitly checked
+never to merge because Grade is a hard attribute.
+
 See [docs/architecture.md](docs/architecture.md), [AI_CONTEXT.md](AI_CONTEXT.md),
 and [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md) for the project boundaries
 and working rules.

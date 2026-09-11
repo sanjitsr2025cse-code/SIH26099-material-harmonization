@@ -45,14 +45,22 @@ class PgVectorCandidateRetriever:
     def __init__(self, connection, table: str = "material_embeddings"):
         self.connection, self.table = connection, table
 
-    def top_k(self, vector: Sequence[float], k: int = 5) -> list[Candidate]:
+    def top_k(
+        self,
+        vector: Sequence[float],
+        k: int = 5,
+        exclude_record_id: str | None = None,
+    ) -> list[Candidate]:
         query = (f"SELECT record_id, 1 - (embedding <=> :vector) AS score, metadata "
-                 f"FROM {self.table} ORDER BY embedding <=> :vector LIMIT :limit")
+                 f"FROM {self.table} "
+                 f"{'WHERE record_id <> :exclude_record_id ' if exclude_record_id else ''}"
+                 f"ORDER BY embedding <=> :vector LIMIT :limit")
         from sqlalchemy import text
 
-        rows = self.connection.execute(
-            text(query), {"vector": str(list(vector)), "limit": k}
-        )
+        params = {"vector": str(list(vector)), "limit": k}
+        if exclude_record_id:
+            params["exclude_record_id"] = exclude_record_id
+        rows = self.connection.execute(text(query), params)
         return [Candidate(row[0], float(row[1]), row[2] or {}) for row in rows]
 
 def hnsw_index_sql(table: str = "material_embeddings", column: str = "embedding") -> str:

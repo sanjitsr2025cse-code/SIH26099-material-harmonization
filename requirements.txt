@@ -6,3 +6,8 @@ httpx
 pandas
 openpyxl
 xlrd
+
+# Optional Milestone 2 PostgreSQL adapter (not needed for the test suite):
+# sqlalchemy
+# psycopg[binary]
+# sentence-transformers

@@ -30,12 +30,34 @@
 - [x] Keep all persistence, ML, matching, and infrastructure concerns out of
   scope.
 
+## Milestone 2 — AI harmonization engine
+
+**Status: Complete**
+
+- [x] Process multilingual descriptions without an LLM or translation service.
+- [x] Generate deterministic local embeddings and support a lazy multilingual
+  Sentence Transformer adapter.
+- [x] Provide in-memory Top-K cosine retrieval and optional PostgreSQL/pgvector
+  persistence with HNSW index SQL.
+- [x] Combine semantic, technical-attribute, and terminology scores.
+- [x] Apply hard constraints for grade, size, standard, pressure, and voltage.
+- [x] Produce configurable EQUIVALENT, REVIEW, or DIFFERENT decisions with
+  confidence and explanations.
+- [x] Preserve original descriptions and extracted attributes.
+
 ## Future phases — Planned, not implemented
 
 - [ ] Persistent source ingestion and provenance.
-- [ ] Embeddings and similarity retrieval.
-- [ ] Matching, clustering, confidence, and human review.
+- [ ] Clustering, confidence calibration, and human review workflows.
 - [ ] Governed material registry and supporting APIs.
 - [ ] Authentication, persistence, migrations, deployment, and CI/CD.
 
 Future items require explicit design and acceptance before implementation.
+## Milestone 2 (complete)
+
+Added `app/harmonization` with translation-free multilingual processing,
+lazy optional SentenceTransformer embeddings and deterministic fallback,
+embedding records, in-memory cosine retrieval, pgvector retrieval/HNSW DDL,
+optional environment-configured PostgreSQL persistence, and explainable hybrid
+matching with hard technical constraints. Tests use injected/fallback
+components only; no model download or live database is required.

@@ -7,7 +7,7 @@ units, abbreviations, and levels of detail. The project goal is to provide a
 reliable path from source descriptions to harmonized, reviewable material
 records without hiding uncertainty or losing source context.
 
-## Milestone 1 architecture
+## Current architecture
 
 The current architecture is intentionally a single Python package:
 
@@ -32,7 +32,9 @@ app/
 `LOGGING_LEVEL`), configures logging, and registers the health route. The
 independent `app.pipeline` package provides in-memory Pandas ingestion,
 validation, profiling, normalization, extraction, and rule classification.
-There is no persistence, network integration, model loading, or authentication.
+There is no required persistence, network integration, model loading, or
+authentication for local tests. Milestone 2 provides optional adapters for
+model loading and PostgreSQL/pgvector persistence.
 
 ## Pipeline flow
 
@@ -58,3 +60,31 @@ design may evaluate PostgreSQL with pgvector and HNSW indexes, but no database
 choice or schema is committed by this phase. Deployment, authentication,
 observability, migrations, Docker, Kubernetes, and CI/CD will be designed only
 when the corresponding requirements are accepted.
+## Milestone 2 harmonization
+
+The additive `app/harmonization` package sits beside the Milestone 1
+`app/pipeline` modules. `MultilingualProcessor` uses Unicode normalization,
+language hints, and script detection without translation or LLM calls.
+`HashingEmbedder` is deterministic and dependency-free; `SentenceTransformerEmbedder`
+loads the optional multilingual model lazily and uses hashing when the package
+or model is unavailable. `EmbeddingRecord` preserves source text and metadata.
+
+`InMemoryCosineIndex` is the test adapter. `PgVectorCandidateRetriever` emits
+parameterized top-k pgvector queries, and `persistence.MaterialRepository`
+provides optional SQLAlchemy/psycopg storage. `hnsw_index_sql()` returns the
+explicit HNSW DDL. No database connection is made at import time.
+
+`MaterialMatcher` combines cosine similarity, extracted technical attributes,
+and token terminology. Grade, size, standard, pressure, and voltage conflicts
+are hard constraints and immediately produce `DIFFERENT`; otherwise configurable
+thresholds produce `EQUIVALENT`, `REVIEW`, or `DIFFERENT` with reasons and
+component scores. Original descriptions and extracted attributes are never
+discarded.
+
+Optional model, database, threshold, and retrieval defaults are read from
+environment variables through `HarmonizationSettings`; callers can still
+override them explicitly for tests or tenant-specific behavior.
+
+The test environment intentionally does not download models or require a live
+PostgreSQL instance. Clustering, CNMC registry integration, UI, auth, and
+production orchestration remain out of scope.

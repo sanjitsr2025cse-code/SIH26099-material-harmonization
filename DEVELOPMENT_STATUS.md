@@ -45,19 +45,20 @@
   confidence and explanations.
 - [x] Preserve original descriptions and extracted attributes.
 
+## Milestone 3 — Product registry and human review
+
+- [x] Deterministic equivalence clustering using existing matching decisions.
+- [x] Canonical material records and unique CNMC-style identifiers.
+- [x] Source material-code mappings with append-only mapping history.
+- [x] Review workflow for REVIEW candidates with approve/reject/override.
+- [x] AI confidence, component scores, explanations, and human decisions.
+- [x] Precision, recall, F1, false-positive, and false-negative evaluation.
+- [x] Optional lazy Streamlit upload/search/review/statistics dashboard.
+- [x] In-memory repositories only; no infrastructure required.
+
 ## Future phases — Planned, not implemented
 
 - [ ] Persistent source ingestion and provenance.
-- [ ] Clustering, confidence calibration, and human review workflows.
-- [ ] Governed material registry and supporting APIs.
 - [ ] Authentication, persistence, migrations, deployment, and CI/CD.
 
 Future items require explicit design and acceptance before implementation.
-## Milestone 2 (complete)
-
-Added `app/harmonization` with translation-free multilingual processing,
-lazy optional SentenceTransformer embeddings and deterministic fallback,
-embedding records, in-memory cosine retrieval, pgvector retrieval/HNSW DDL,
-optional environment-configured PostgreSQL persistence, and explainable hybrid
-matching with hard technical constraints. Tests use injected/fallback
-components only; no model download or live database is required.

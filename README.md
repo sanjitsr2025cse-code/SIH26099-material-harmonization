@@ -20,9 +20,10 @@ The application still starts without a database or external services, and
 Milestone 2 adds an additive `app/harmonization` package: translation-free
 multilingual normalization, optional lazy multilingual embeddings (with a
 deterministic hashing fallback), top-k cosine retrieval, explainable hybrid
-matching, and an optional PostgreSQL/pgvector persistence adapter. Clustering,
-CNMC registry, UI, auth, queues, containers, and external APIs remain out of
-scope.
+matching, and an optional PostgreSQL/pgvector persistence adapter. Milestone 3
+adds `app.product`: deterministic matching-decision clusters, canonical
+CNMC-style records, append-only source-code mappings, human review, and
+evaluation metrics, all in memory.
 
 ## Local development
 
@@ -95,6 +96,26 @@ optional; its model is loaded only on first use and falls back automatically.
 Optional defaults can be configured with `EMBEDDING_MODEL`,
 `MATCH_EQUIVALENT_THRESHOLD`, `MATCH_REVIEW_THRESHOLD`, and
 `RETRIEVAL_TOP_K`.
+
+### Milestone 3 registry and review
+
+```python
+from app.product import MaterialRegistry
+
+registry = MaterialRegistry()
+registry.ingest([
+    {"record_id": "a", "source": "erp", "material_code": "10",
+     "description": "stainless steel bolt 10 mm"},
+    {"record_id": "b", "source": "catalogue", "material_code": "B-10",
+     "description": "stainless steel bolt 10 mm"},
+])
+print(registry.list_canonicals()[0].cnmc_id)
+```
+
+Uncertain pairs are available through `registry.candidates()` and can be
+approved, rejected, or overridden with `registry.decide_review(...)`. The
+optional dashboard is lazy: install the commented `streamlit` dependency and
+run `streamlit run app/product/dashboard.py`.
 
 ## Planned direction
 

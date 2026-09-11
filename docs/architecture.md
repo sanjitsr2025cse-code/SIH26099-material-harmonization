@@ -86,5 +86,19 @@ environment variables through `HarmonizationSettings`; callers can still
 override them explicitly for tests or tenant-specific behavior.
 
 The test environment intentionally does not download models or require a live
-PostgreSQL instance. Clustering, CNMC registry integration, UI, auth, and
-production orchestration remain out of scope.
+PostgreSQL instance.
+
+## Milestone 3 product registry
+
+`app.product.MaterialRegistry` harmonizes incoming records, compares every
+pair using `MaterialMatcher`, and uses deterministic union-find to cluster only
+`EQUIVALENT` pairs. Stable member ordering selects the canonical record, and
+each cluster receives a unique `CNMC-000001` style identifier. Source-system
+and material-code mappings are in memory; every new mapping appends a
+`MappingEvent` to history.
+
+`ReviewWorkflow` stores `REVIEW` candidates, AI confidence/component scores,
+explanations, and human approve/reject/override decisions. `evaluate_decisions`
+reports precision, recall, F1, false positives, and false negatives from
+labelled pairs. `app.product.dashboard` imports Streamlit only when launched,
+so health/API imports and tests remain dependency-free.

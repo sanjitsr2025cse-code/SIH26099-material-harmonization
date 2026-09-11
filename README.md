@@ -19,24 +19,37 @@ authentication, and production infrastructure are not implemented.
 
 ## Local development
 
-1. Create and activate a virtual environment.
-2. Install dependencies:
+Windows PowerShell:
+
+1. Create a virtual environment:
+
+   ```powershell
+   python -m venv .venv
+   ```
+
+2. Activate it:
+
+   ```powershell
+   .\.venv\Scripts\Activate.ps1
+   ```
+
+3. Install dependencies:
 
    ```powershell
    python -m pip install -r requirements.txt
    ```
 
-3. Optionally copy `.env.example` to `.env` and adjust settings.
-4. Run the API:
-
-   ```powershell
-   uvicorn app.main:app --reload
-   ```
-
+4. Optionally copy `.env.example` to `.env` and adjust settings.
 5. Run tests:
 
    ```powershell
-   pytest
+   python -m pytest
+   ```
+
+6. Run the API:
+
+   ```powershell
+   python -m uvicorn app.main:app --reload
    ```
 
 The local health check is available at <http://127.0.0.1:8000/health>.

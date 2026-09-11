@@ -7,7 +7,7 @@ units, abbreviations, and levels of detail. The project goal is to provide a
 reliable path from source descriptions to harmonized, reviewable material
 records without hiding uncertainty or losing source context.
 
-## Phase 0 architecture
+## Milestone 1 architecture
 
 The current architecture is intentionally a single Python package:
 
@@ -17,25 +17,35 @@ app/
 ├── core/
 │   ├── config.py           environment-backed runtime settings
 │   └── logging.py          standard-library logging setup
-└── api/routes/
-    └── health.py           GET /health
+├── api/routes/
+│   └── health.py           GET /health
+└── pipeline/
+    ├── ingestion.py        CSV and Excel loading
+    ├── validation.py       schema and record checks
+    ├── profiling.py        dataset quality profile
+    ├── normalization.py    configurable text normalization
+    ├── extraction.py       technical attributes and unit checks
+    └── classification.py   transparent keyword categories
 ```
 
 `app.main:app` loads four settings (`APP_NAME`, `ENVIRONMENT`, `DEBUG`, and
-`LOGGING_LEVEL`), configures logging, and registers the health route. There is
-no persistence, network integration, model loading, authentication, or
-business-domain abstraction in Phase 0.
+`LOGGING_LEVEL`), configures logging, and registers the health route. The
+independent `app.pipeline` package provides in-memory Pandas ingestion,
+validation, profiling, normalization, extraction, and rule classification.
+There is no persistence, network integration, model loading, or authentication.
 
-## Planned pipeline (not implemented)
+## Pipeline flow
 
 The intended future flow is:
 
-1. Ingest source records while retaining provenance.
-2. Validate and normalize text, units, and structured attributes.
-3. Generate representations suitable for semantic comparison.
-4. Retrieve and score candidate canonical materials.
-5. Cluster or merge candidates with explicit confidence and review paths.
-6. Publish governed registry records and feedback for later improvement.
+1. Ingest CSV/Excel records while retaining `original_description`.
+2. Validate required fields, types, missing values, and duplicates.
+3. Profile columns and normalize text, units, abbreviations, and synonyms.
+4. Extract technical attributes with regex, dictionaries, and rules.
+5. Validate extracted values/units and classify using configured keywords.
+
+Later phases may generate representations suitable for semantic comparison,
+retrieve candidates, cluster or merge records, and publish a governed registry.
 
 Possible innovations include explainable matches, confidence-aware human review,
 incremental learning from corrections, and cross-source provenance. These are

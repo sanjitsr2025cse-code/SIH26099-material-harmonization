@@ -2,20 +2,23 @@
 
 SIH26099 Material Harmonization is planned as a system to help normalize and
 match material descriptions from heterogeneous sources. The current repository
-contains only the deliberately small Phase 0 foundation: a FastAPI process,
-environment-backed settings, logging setup, and a health check.
+contains the Phase 0 FastAPI foundation and a deliberately pre-ML Milestone 1
+Pandas pipeline for inspecting and preparing material descriptions.
 
 ## Current status
 
-Phase 0 is complete. The application starts without a database or external
-services, and `GET /health` returns:
+Milestone 1 is complete. CSV and Excel records can be ingested, validated,
+profiled, normalized, rule-extracted, and assigned transparent keyword
+categories. Source descriptions are retained in `original_description`.
+The application still starts without a database or external services, and
+`GET /health` returns:
 
 ```json
 {"status": "healthy"}
 ```
 
-The planned pipeline, machine learning, matching, clustering, registry,
-authentication, and production infrastructure are not implemented.
+ML, matching, clustering, registry, authentication, and production
+infrastructure are not implemented.
 
 ## Local development
 
@@ -53,6 +56,20 @@ Windows PowerShell:
    ```
 
 The local health check is available at <http://127.0.0.1:8000/health>.
+
+### Pipeline usage
+
+```python
+from app.pipeline.ingestion import ingest_file
+from app.pipeline.pipeline import MaterialPipeline
+
+records = ingest_file("materials.csv")
+result = MaterialPipeline().run(records)
+print(result.validation.valid, result.profile.row_count)
+```
+
+The pipeline modules under `app/pipeline` are independently testable. They
+perform no persistence, network calls, embeddings, or model inference.
 
 ## Planned direction
 

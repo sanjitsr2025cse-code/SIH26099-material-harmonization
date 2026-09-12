@@ -1,6 +1,9 @@
 """Deterministic synthetic CPSE material data used by validation benchmarks."""
 from __future__ import annotations
 
+import csv
+import io
+import json
 import random
 from typing import Any
 
@@ -79,3 +82,28 @@ def generate_dataset(size: int = 10_000, seed: int = 10_000) -> list[dict[str, A
 
 # Descriptive alias for callers that want to make the synthetic nature clear.
 generate_synthetic_dataset = generate_dataset
+
+
+def demo_dataset_csv(size: int = 10_000, seed: int = 10_000) -> bytes:
+    """Return the deterministic benchmark dataset in the legacy CSV format.
+
+    This compatibility helper preserves the existing generated records and
+    serializes only the attributes field for CSV transport.
+    """
+    fieldnames = [
+        "record_id",
+        "source",
+        "material_code",
+        "description",
+        "attributes",
+        "ground_truth_group",
+        "variant",
+    ]
+    output = io.StringIO(newline="")
+    writer = csv.DictWriter(output, fieldnames=fieldnames)
+    writer.writeheader()
+    for record in generate_dataset(size=size, seed=seed):
+        row = dict(record)
+        row["attributes"] = json.dumps(row["attributes"], ensure_ascii=False, sort_keys=True)
+        writer.writerow(row)
+    return output.getvalue().encode("utf-8")

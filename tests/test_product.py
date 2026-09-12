@@ -1,9 +1,6 @@
 from app.product import MaterialRegistry, evaluate_decisions
-from app.product.dashboard import (
-    demo_dataset_csv,
-    ingest_dashboard_records,
-    prepare_dashboard_records,
-)
+from app.benchmark.dataset import demo_dataset_csv
+from app.pipeline.attributes import ingest_records, prepare_records
 import pandas as pd
 from io import BytesIO
 from time import perf_counter
@@ -60,8 +57,8 @@ def test_demo_dataset_csv_uses_shared_generator():
     assert {"record_id", "description", "ground_truth_group"} <= set(frame.columns)
 
 
-def test_dashboard_parses_stringified_attributes_before_ingestion():
-    records = prepare_dashboard_records([
+def test_backend_parses_stringified_attributes_before_ingestion():
+    records = prepare_records([
         {"record_id": "json", "attributes": '{"grade": "B", "size": "M10"}'},
         {"record_id": "python", "attributes": "{'standard': 'ISO 4014'}"},
         {"record_id": "dict", "attributes": {"voltage": "240 V"}},
@@ -76,9 +73,9 @@ def test_dashboard_parses_stringified_attributes_before_ingestion():
     assert records[4]["attributes"] == {}
 
 
-def test_dashboard_ingestion_populates_registry_statistics():
+def test_backend_ingestion_populates_registry_statistics():
     frame = pd.read_csv(BytesIO(demo_dataset_csv(4, seed=7)))
-    registry = ingest_dashboard_records(MaterialRegistry(), frame.to_dict("records"))
+    registry = ingest_records(MaterialRegistry(), frame.to_dict("records"))
 
     stats = registry.statistics()
     assert stats["records"] == 4
@@ -86,12 +83,12 @@ def test_dashboard_ingestion_populates_registry_statistics():
     assert stats["mappings"] == 4
 
 
-def test_dashboard_ingestion_scales_to_10k_generated_csv():
+def test_backend_ingestion_scales_to_10k_generated_csv():
     payload = demo_dataset_csv(10_000, seed=7)
     frame = pd.read_csv(BytesIO(payload))
 
     started = perf_counter()
-    registry = ingest_dashboard_records(MaterialRegistry(), frame.to_dict("records"))
+    registry = ingest_records(MaterialRegistry(), frame.to_dict("records"))
     elapsed = perf_counter() - started
 
     stats = registry.statistics()

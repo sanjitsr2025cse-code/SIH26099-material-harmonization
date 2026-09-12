@@ -126,8 +126,8 @@ print(registry.list_canonicals()[0].cnmc_id)
 
 Uncertain pairs are available through `registry.candidates()` and can be
 approved, rejected, or overridden with `registry.decide_review(...)`. The
-optional dashboard is lazy: install the commented `streamlit` dependency and
-run `streamlit run app/product/dashboard.py`.
+Next.js dashboard in `web/` provides the presentation layer for product
+workflows; run it from `web/` with `npm install` followed by `npm run dev`.
 
 ## Planned direction
 

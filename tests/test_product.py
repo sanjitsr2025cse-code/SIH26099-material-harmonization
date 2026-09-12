@@ -6,6 +6,7 @@ from app.product.dashboard import (
 )
 import pandas as pd
 from io import BytesIO
+from time import perf_counter
 
 
 def test_registry_clusters_deterministically_and_tracks_mappings():
@@ -83,3 +84,18 @@ def test_dashboard_ingestion_populates_registry_statistics():
     assert stats["records"] == 4
     assert stats["canonical_materials"] > 0
     assert stats["mappings"] == 4
+
+
+def test_dashboard_ingestion_scales_to_10k_generated_csv():
+    payload = demo_dataset_csv(10_000, seed=7)
+    frame = pd.read_csv(BytesIO(payload))
+
+    started = perf_counter()
+    registry = ingest_dashboard_records(MaterialRegistry(), frame.to_dict("records"))
+    elapsed = perf_counter() - started
+
+    stats = registry.statistics()
+    assert elapsed < 60
+    assert stats["records"] == 10_000
+    assert stats["canonical_materials"] > 0
+    assert stats["mappings"] == 10_000

@@ -1,6 +1,8 @@
 """Deterministic in-memory clustering, canonical registry, and mappings."""
+from collections import defaultdict
 from typing import Any, Iterable
 from app.harmonization.matching import MaterialMatcher
+from app.harmonization.retrieval import InMemoryCosineIndex
 from app.harmonization.service import harmonize_records
 from .models import AIDecision, CanonicalMaterial, MappingEvent, ReviewItem
 from .review import ReviewWorkflow
@@ -8,6 +10,10 @@ from .review import ReviewWorkflow
 
 class MaterialRegistry:
     """Governed registry built from existing pairwise matching decisions."""
+
+    _EXACT_CLUSTER_LIMIT = 512
+    _CANDIDATE_LIMIT = 16
+    _BLOCK_LIMIT = 32
 
     def __init__(self, matcher: MaterialMatcher | None = None) -> None:
         self.matcher = matcher or MaterialMatcher()
@@ -45,22 +51,22 @@ class MaterialRegistry:
             a, b = find(a), find(b)
             if a != b: parent[max(a, b)] = min(a, b)
         self.decisions.clear()
-        for position, left_id in enumerate(ids):
-            for right_id in ids[position + 1:]:
-                result = self.matcher.compare(self.records[left_id], self.records[right_id])
-                decision = AIDecision(left_id, right_id, result.decision, result.confidence,
-                                      tuple(result.reasons), result.semantic_score,
-                                      result.attribute_score, result.terminology_score)
-                self.decisions.append(decision)
-                if result.decision == "EQUIVALENT":
+        pairs = self._candidate_pairs(ids)
+        for left_id, right_id in pairs:
+            result = self.matcher.compare(self.records[left_id], self.records[right_id])
+            decision = AIDecision(left_id, right_id, result.decision, result.confidence,
+                                  tuple(result.reasons), result.semantic_score,
+                                  result.attribute_score, result.terminology_score)
+            self.decisions.append(decision)
+            if result.decision == "EQUIVALENT":
+                union(left_id, right_id)
+            elif result.decision == "REVIEW":
+                key = f"review-{left_id}-{right_id}"
+                existing_review = self.review.items.get(key)
+                if existing_review and existing_review.status == "APPROVE":
                     union(left_id, right_id)
-                elif result.decision == "REVIEW":
-                    key = f"review-{left_id}-{right_id}"
-                    existing_review = self.review.items.get(key)
-                    if existing_review and existing_review.status == "APPROVE":
-                        union(left_id, right_id)
-                    elif not existing_review:
-                        self.review.add(ReviewItem(key, left_id, right_id, decision))
+                elif not existing_review:
+                    self.review.add(ReviewItem(key, left_id, right_id, decision))
         groups: dict[str, list[str]] = {}
         for record_id in ids:
             groups.setdefault(find(record_id), []).append(record_id)
@@ -78,6 +84,91 @@ class MaterialRegistry:
             new[cnmc_id] = CanonicalMaterial(cnmc_id, canonical, member_ids)
         self.canonicals = new
         self._refresh_mappings()
+
+    def _candidate_pairs(self, ids: list[str]) -> Iterable[tuple[str, str]]:
+        """Return bounded, embedding-ranked pairs for larger registries.
+
+        The original exhaustive enumeration is retained for small datasets so
+        that existing decisions and review behavior remain byte-for-byte
+        compatible.  For larger uploads, identical embeddings are grouped
+        before cosine retrieval; the matcher still makes every emitted
+        decision and remains the sole source of clustering semantics.
+        """
+        if len(ids) <= self._EXACT_CLUSTER_LIMIT:
+            return ((left_id, right_id)
+                    for position, left_id in enumerate(ids)
+                    for right_id in ids[position + 1:])
+
+        index = InMemoryCosineIndex()
+        exact_vectors: dict[tuple[float, ...], list[str]] = defaultdict(list)
+        for record_id in ids:
+            record = self.records[record_id]
+            vector = record.get("embedding")
+            if vector:
+                exact_vectors[tuple(vector)].append(record_id)
+
+        pairs: set[tuple[str, str]] = set()
+        # Retrieve against one representative per identical embedding.  This
+        # keeps repeated dashboard rows cheap while expanding results back to
+        # their original records for complete mappings and explanations.
+        representatives = sorted((members[0], vector)
+                                 for vector, members in exact_vectors.items())
+        representative_vectors = {record_id: tuple(vector)
+                                  for record_id, vector in representatives}
+        for record_id, vector in representatives:
+            index.add(record_id, vector)
+        attribute_groups: dict[
+            tuple[tuple[str, str], ...], dict[tuple[float, ...], list[str]]
+        ] = defaultdict(lambda: defaultdict(list))
+        attribute_members: dict[str, tuple[tuple[str, str], ...]] = {}
+        for record_id in ids:
+            attrs = self.records[record_id].get("extracted_attributes", {})
+            signature = tuple(sorted(
+                (name, str(attrs[name]).casefold())
+                for name in self.matcher.config.hard_attributes
+                if name in attrs
+            ))
+            attribute_members[record_id] = signature
+            if signature and self.records[record_id].get("embedding"):
+                attribute_groups[signature][
+                    tuple(self.records[record_id]["embedding"])
+                ].append(record_id)
+        for left_id, vector in representatives:
+            if attribute_members[left_id]:
+                continue
+            candidates = index.top_k(vector, self._CANDIDATE_LIMIT)
+            for candidate in candidates:
+                left_members = exact_vectors[tuple(vector)]
+                right_members = exact_vectors[representative_vectors[candidate.record_id]]
+                for left_member in left_members[:self._BLOCK_LIMIT]:
+                    for right_member in right_members[:self._BLOCK_LIMIT]:
+                        if left_member != right_member:
+                            pairs.add(tuple(sorted((left_member, right_member))))
+        for groups in attribute_groups.values():
+            local_index = InMemoryCosineIndex()
+            local_members: dict[str, list[str]] = {}
+            all_members = [member for members in groups.values() for member in members]
+            if len(all_members) <= self._EXACT_CLUSTER_LIMIT:
+                pairs.update(
+                    tuple(sorted((left_id, right_id)))
+                    for position, left_id in enumerate(all_members)
+                    for right_id in all_members[position + 1:]
+                )
+                continue
+            for vector, members in groups.items():
+                representative_id = members[0]
+                local_members[representative_id] = members
+                local_index.add(representative_id, vector)
+            for left_id, members in local_members.items():
+                vector = self.records[left_id]["embedding"]
+                for candidate in local_index.top_k(vector, self._CANDIDATE_LIMIT):
+                    for left_member in members[:self._BLOCK_LIMIT]:
+                        for right_member in local_members[candidate.record_id][
+                            :self._BLOCK_LIMIT
+                        ]:
+                            if left_member != right_member:
+                                pairs.add(tuple(sorted((left_member, right_member))))
+        return sorted(pairs)
 
     def _refresh_mappings(self) -> None:
         for material in self.canonicals.values():

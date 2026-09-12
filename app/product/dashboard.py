@@ -6,6 +6,21 @@ not require the optional UI dependency.
 from typing import Any
 
 
+def demo_dataset_csv(size: int = 100, seed: int = 10_000) -> bytes:
+    """Return a reproducible demo CSV using the shared synthetic dataset."""
+    if size < 1:
+        raise ValueError("size must be positive")
+    import io
+    import pandas as pd
+
+    from app.benchmark.dataset import generate_dataset
+
+    frame = pd.DataFrame(generate_dataset(size=size, seed=seed))
+    output = io.StringIO()
+    frame.to_csv(output, index=False)
+    return output.getvalue().encode("utf-8")
+
+
 def run(registry: Any = None) -> None:
     try:
         import streamlit as st
@@ -16,13 +31,36 @@ def run(registry: Any = None) -> None:
     from app.product.registry import MaterialRegistry
     registry = registry or MaterialRegistry()
     st.title("Material Harmonization Registry")
+    st.subheader("Demo dataset")
+    demo_size = st.number_input(
+        "Demo record count", min_value=1, max_value=10_000, value=100, step=1
+    )
+    if st.button("Generate Demo Dataset"):
+        st.session_state["demo_dataset_csv"] = demo_dataset_csv(int(demo_size))
+    generated_csv = st.session_state.get("demo_dataset_csv")
+    if generated_csv:
+        st.download_button(
+            "Download Demo Dataset CSV",
+            generated_csv,
+            file_name="material_harmonization_demo.csv",
+            mime="text/csv",
+        )
+        use_generated = st.checkbox("Use generated demo dataset", value=False)
+    else:
+        use_generated = False
     uploaded = st.file_uploader("Upload material dataset", type=["csv", "xlsx", "xls"])
-    if uploaded is not None:
+    dataset = generated_csv if use_generated else uploaded
+    if dataset is not None:
         import pandas as pd
+        import io
+
+        if isinstance(dataset, bytes):
+            dataset = io.BytesIO(dataset)
+            dataset.name = "material_harmonization_demo.csv"
         frame = (
-            pd.read_csv(uploaded)
-            if uploaded.name.lower().endswith(".csv")
-            else pd.read_excel(uploaded)
+            pd.read_csv(dataset)
+            if dataset.name.lower().endswith(".csv")
+            else pd.read_excel(dataset)
         )
         st.subheader("Validation results")
         st.write({"rows": len(frame), "columns": list(frame.columns)})

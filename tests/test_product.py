@@ -1,4 +1,7 @@
 from app.product import MaterialRegistry, evaluate_decisions
+from app.product.dashboard import demo_dataset_csv
+import pandas as pd
+from io import BytesIO
 
 
 def test_registry_clusters_deterministically_and_tracks_mappings():
@@ -43,3 +46,10 @@ def test_evaluation_reports_error_metrics():
     metrics = evaluate_decisions(registry.decisions, {("a", "b"): True})
     assert metrics.false_negatives == 1
     assert metrics.recall == 0.0
+
+
+def test_demo_dataset_csv_uses_shared_generator():
+    payload = demo_dataset_csv(100, seed=7)
+    frame = pd.read_csv(BytesIO(payload))
+    assert len(frame) == 100
+    assert {"record_id", "description", "ground_truth_group"} <= set(frame.columns)

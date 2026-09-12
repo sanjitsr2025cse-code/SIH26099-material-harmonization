@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
 import './globals.css'
 
-export const metadata: Metadata = { title: 'Bharat Material Grid | SIH Dashboard', description: 'AI-Driven Standardization and Harmonization of Material Codes Across CPSEs — One Nation – One Material Code.' }
+export const metadata: Metadata = { title: 'Bharath Mati | One Nation – One Material Code', description: 'Bharath Mati national material registry dashboard for SIH 2024.' }
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) { return <html lang="en"><body>{children}</body></html> }

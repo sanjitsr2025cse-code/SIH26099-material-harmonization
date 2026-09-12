@@ -1,5 +1,5 @@
 from app.product import MaterialRegistry, evaluate_decisions
-from app.product.dashboard import demo_dataset_csv
+from app.product.dashboard import demo_dataset_csv, prepare_dashboard_records
 import pandas as pd
 from io import BytesIO
 
@@ -53,3 +53,19 @@ def test_demo_dataset_csv_uses_shared_generator():
     frame = pd.read_csv(BytesIO(payload))
     assert len(frame) == 100
     assert {"record_id", "description", "ground_truth_group"} <= set(frame.columns)
+
+
+def test_dashboard_parses_stringified_attributes_before_ingestion():
+    records = prepare_dashboard_records([
+        {"record_id": "json", "attributes": '{"grade": "B", "size": "M10"}'},
+        {"record_id": "python", "attributes": "{'standard': 'ISO 4014'}"},
+        {"record_id": "dict", "attributes": {"voltage": "240 V"}},
+        {"record_id": "empty", "attributes": ""},
+        {"record_id": "null", "attributes": None},
+    ])
+
+    assert records[0]["attributes"] == {"grade": "B", "size": "M10"}
+    assert records[1]["attributes"] == {"standard": "ISO 4014"}
+    assert records[2]["attributes"] == {"voltage": "240 V"}
+    assert records[3]["attributes"] == {}
+    assert records[4]["attributes"] == {}

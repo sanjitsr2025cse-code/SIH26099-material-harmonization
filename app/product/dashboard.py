@@ -38,6 +38,12 @@ def prepare_dashboard_records(records: list[dict[str, Any]]) -> list[dict[str, A
     return prepared
 
 
+def ingest_dashboard_records(registry: Any, records: list[dict[str, Any]]) -> Any:
+    """Normalize uploaded records and ingest them into the supplied registry."""
+    registry.ingest(prepare_dashboard_records(records))
+    return registry
+
+
 def demo_dataset_csv(size: int = 100, seed: int = 10_000) -> bytes:
     """Return a reproducible demo CSV using the shared synthetic dataset."""
     if size < 1:
@@ -61,7 +67,8 @@ def run(registry: Any = None) -> None:
             "The dashboard is optional; install Streamlit to run it."
         ) from exc
     from app.product.registry import MaterialRegistry
-    registry = registry or MaterialRegistry()
+    if registry is None:
+        registry = st.session_state.setdefault("material_registry", MaterialRegistry())
     st.title("Material Harmonization Registry")
     st.subheader("Demo dataset")
     demo_size = st.number_input(
@@ -106,7 +113,7 @@ def run(registry: Any = None) -> None:
                 "duplicate_rows": duplicates,
                 "valid": empty_descriptions == 0,
             })
-            registry.ingest(prepare_dashboard_records(frame.to_dict("records")))
+            ingest_dashboard_records(registry, frame.to_dict("records"))
             st.success(f"Loaded {len(registry.records)} records")
     query = st.text_input("Search canonical materials")
     if query:

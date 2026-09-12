@@ -1,5 +1,9 @@
 from app.product import MaterialRegistry, evaluate_decisions
-from app.product.dashboard import demo_dataset_csv, prepare_dashboard_records
+from app.product.dashboard import (
+    demo_dataset_csv,
+    ingest_dashboard_records,
+    prepare_dashboard_records,
+)
 import pandas as pd
 from io import BytesIO
 
@@ -69,3 +73,13 @@ def test_dashboard_parses_stringified_attributes_before_ingestion():
     assert records[2]["attributes"] == {"voltage": "240 V"}
     assert records[3]["attributes"] == {}
     assert records[4]["attributes"] == {}
+
+
+def test_dashboard_ingestion_populates_registry_statistics():
+    frame = pd.read_csv(BytesIO(demo_dataset_csv(4, seed=7)))
+    registry = ingest_dashboard_records(MaterialRegistry(), frame.to_dict("records"))
+
+    stats = registry.statistics()
+    assert stats["records"] == 4
+    assert stats["canonical_materials"] > 0
+    assert stats["mappings"] == 4

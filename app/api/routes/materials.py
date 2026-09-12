@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from app.benchmark.dataset import generate_dataset
 from app.benchmark.runner import run_benchmark
-from app.product.dashboard import parse_attributes
+from app.pipeline.attributes import prepare_records
 from app.product.registry import MaterialRegistry
 
 router = APIRouter(prefix="/api/materials", tags=["materials"])
@@ -60,7 +60,7 @@ async def upload_materials(file: UploadFile = File(...)) -> dict[str, Any]:
     try:
         import pandas as pd
         frame = pd.read_csv(io.BytesIO(payload)) if filename.lower().endswith(".csv") else pd.read_excel(io.BytesIO(payload))
-        records = [{key: (parse_attributes(value) if key == "attributes" else value) for key, value in row.items()} for row in frame.to_dict("records")]
+        records = prepare_records(frame.to_dict("records"))
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Unable to read {filename}: {exc}") from exc
     validation = _validation(records)

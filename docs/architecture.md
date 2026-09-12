@@ -104,5 +104,5 @@ and material-code mappings are in memory; every new mapping appends a
 `ReviewWorkflow` stores `REVIEW` candidates, AI confidence/component scores,
 explanations, and human approve/reject/override decisions. `evaluate_decisions`
 reports precision, recall, F1, false positives, and false negatives from
-labelled pairs. `app.product.dashboard` imports Streamlit only when launched,
-so health/API imports and tests remain dependency-free.
+labelled pairs. The `web/` Next.js application provides the presentation layer, while FastAPI
+routes remain thin adapters over the backend domain and pipeline modules.

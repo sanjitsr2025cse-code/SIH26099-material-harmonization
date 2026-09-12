@@ -53,7 +53,7 @@
 - [x] Review workflow for REVIEW candidates with approve/reject/override.
 - [x] AI confidence, component scores, explanations, and human decisions.
 - [x] Precision, recall, F1, false-positive, and false-negative evaluation.
-- [x] Optional lazy Streamlit upload/search/review/statistics dashboard.
+- [x] Next.js upload/search/review/statistics dashboard.
 - [x] In-memory repositories only; no infrastructure required.
 
 ## External PostgreSQL and embedding setup

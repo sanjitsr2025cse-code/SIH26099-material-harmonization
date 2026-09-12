@@ -11,5 +11,3 @@ xlrd
 sqlalchemy
 psycopg[binary]
 sentence-transformers
-# Optional Milestone 3 dashboard (not needed for API or tests):
-# streamlit

@@ -35,10 +35,15 @@ export type Mapping = {
   sequence: number
 }
 
-const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '')
+const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '')
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${baseUrl}${path}`, { ...init, headers: { Accept: 'application/json', ...init?.headers } })
+  let response: Response
+  try {
+    response = await fetch(`${baseUrl}${path}`, { ...init, headers: { Accept: 'application/json', ...init?.headers } })
+  } catch {
+    throw new Error(`Backend unavailable at ${baseUrl}. Start FastAPI with: python -m uvicorn app.main:app --reload`)
+  }
   if (!response.ok) {
     const detail = await response.json().catch(() => null)
     throw new Error(detail?.detail || `Request failed (${response.status})`)
@@ -56,6 +61,7 @@ export const materialsApi = {
   canonicals: (search = '') => request<{ items: Canonical[] }>(`/api/materials/canonicals?${new URLSearchParams({ search })}`),
   mappings: () => request<{ items: Mapping[] }>('/api/materials/mappings'),
   benchmark: () => request<Record<string, unknown>>('/api/materials/benchmark'),
+  demo: () => request<Record<string, unknown>>('/api/materials/demo'),
   upload: (file: File) => {
     const body = new FormData()
     body.append('file', file)

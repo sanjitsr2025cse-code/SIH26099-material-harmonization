@@ -3,6 +3,7 @@ uvicorn
 pydantic-settings
 pytest
 httpx
+python-multipart
 pandas
 openpyxl
 xlrd

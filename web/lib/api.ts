@@ -35,14 +35,22 @@ export type Mapping = {
   sequence: number
 }
 
-const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '')
+const configuredBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+const baseUrl = (configuredBaseUrl || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000` : 'http://127.0.0.1:8000')).replace(/\/$/, '')
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response
+  const controller = new AbortController()
+  const timeout = window.setTimeout(() => controller.abort(), 10000)
   try {
-    response = await fetch(`${baseUrl}${path}`, { ...init, headers: { Accept: 'application/json', ...init?.headers } })
-  } catch {
+    response = await fetch(`${baseUrl}${path}`, { ...init, signal: controller.signal, headers: { Accept: 'application/json', ...init?.headers } })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error(`Backend request timed out at ${baseUrl}`)
+    }
     throw new Error(`Backend unavailable at ${baseUrl}. Start FastAPI with: python -m uvicorn app.main:app --reload`)
+  } finally {
+    window.clearTimeout(timeout)
   }
   if (!response.ok) {
     const detail = await response.json().catch(() => null)

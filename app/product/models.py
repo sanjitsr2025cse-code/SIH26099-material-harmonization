@@ -20,6 +20,11 @@ class CanonicalMaterial:
     cnmc_id: str
     record: dict[str, Any]
     member_ids: tuple[str, ...]
+    # Registry metadata is deliberately kept alongside the canonical record so
+    # callers can publish provenance without having to inspect every member.
+    metadata: dict[str, Any] = field(default_factory=dict)
+    status: str = "ACTIVE"
+    version: int = 1
 
 
 @dataclass(frozen=True)
@@ -30,6 +35,8 @@ class MappingEvent:
     material_record_id: str
     event_type: str = "MAPPED"
     sequence: int = 0
+    source_description: str = ""
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -48,4 +55,3 @@ class HumanDecision:
     reviewer: str
     explanation: str = ""
     target_cnmc_id: str | None = None
-

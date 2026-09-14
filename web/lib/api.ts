@@ -9,6 +9,7 @@ export type Statistics = {
 export type Overview = {
   statistics: Statistics
   decision_counts: Record<string, number>
+  review_metrics: Record<string, number>
   health: string
 }
 
@@ -24,6 +25,10 @@ export type Canonical = {
   cnmc_id: string
   record: Record<string, unknown>
   member_ids: string[]
+  source_records: Record<string, unknown>[]
+  metadata: { member_count: number; source_systems: string[]; source_codes: string[]; [key: string]: unknown }
+  status: string
+  version: number
 }
 
 export type Mapping = {
@@ -33,6 +38,8 @@ export type Mapping = {
   material_record_id: string
   event_type: string
   sequence: number
+  source_description: string
+  metadata: Record<string, unknown>
 }
 
 const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '')
@@ -65,6 +72,6 @@ export const materialsApi = {
   upload: (file: File) => {
     const body = new FormData()
     body.append('file', file)
-    return request<{ filename: string; validation: { rows: number; columns: string[]; missing_descriptions: number; duplicate_rows: number; valid: boolean }; statistics: Statistics; decision_counts: Record<string, number> }>('/api/materials/upload', { method: 'POST', body })
+    return request<{ filename: string; validation: { rows: number; columns: string[]; missing_descriptions: number; duplicate_rows: number; issues: Array<{ code: string; message: string; count?: number }>; valid: boolean }; statistics: Statistics; decision_counts: Record<string, number> }>('/api/materials/upload', { method: 'POST', body })
   },
 }

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import io
+import json
 from typing import Any
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
@@ -41,16 +42,60 @@ def _decision_counts() -> dict[str, int]:
     return counts
 
 
+def _review_metrics() -> dict[str, int]:
+    counts = {"PENDING": 0, "APPROVE": 0, "REJECT": 0, "OVERRIDE": 0}
+    pending_records: set[str] = set()
+    for item in registry.review.items.values():
+        status = item.status.upper()
+        counts[status] = counts.get(status, 0) + 1
+        if status == "PENDING":
+            pending_records.update((item.left_id, item.right_id))
+    counts["UNIQUE_MATERIALS_REQUIRING_REVIEW"] = len(pending_records)
+    return counts
+
+
 def _validation(records: list[dict[str, Any]]) -> dict[str, Any]:
     missing = sum(not str(item.get("description", "")).strip() for item in records)
-    fingerprints = [str(sorted(item.items())) for item in records]
+    # JSON canonicalization is both faster and safer for nested attributes than
+    # stringifying sorted dict items.
+    fingerprints = [
+        json.dumps(item, sort_keys=True, default=str, ensure_ascii=False)
+        for item in records
+    ]
     duplicates = len(fingerprints) - len(set(fingerprints))
-    return {"rows": len(records), "columns": list(records[0]) if records else [], "missing_descriptions": missing, "duplicate_rows": duplicates, "valid": bool(records) and missing == 0}
+    issues = []
+    if not records:
+        issues.append({"code": "empty_dataset", "message": "The uploaded file has no data rows."})
+    if missing:
+        issues.append({
+            "code": "missing_description",
+            "message": f"{missing} row(s) have no material description.",
+            "count": missing,
+        })
+    if duplicates:
+        issues.append({
+            "code": "duplicate_row",
+            "message": f"{duplicates} duplicate row(s) detected.",
+            "count": duplicates,
+        })
+    return {
+        "rows": len(records),
+        "columns": list(records[0]) if records else [],
+        "missing_descriptions": missing,
+        "duplicate_rows": duplicates,
+        "issues": issues,
+        "valid": bool(records) and missing == 0,
+    }
 
 
 @router.get("/overview")
 def overview() -> dict[str, Any]:
-    return {"statistics": registry.statistics(), "decision_counts": _decision_counts(), "health": "operational"}
+    return {
+        "statistics": registry.statistics(),
+        "decision_counts": _decision_counts(),
+        "review_metrics": _review_metrics(),
+        "health": "operational",
+    }
 
 
 @router.post("/upload")
@@ -59,8 +104,22 @@ async def upload_materials(file: UploadFile = File(...)) -> dict[str, Any]:
     payload = await file.read()
     try:
         import pandas as pd
-        frame = pd.read_csv(io.BytesIO(payload)) if filename.lower().endswith(".csv") else pd.read_excel(io.BytesIO(payload))
-        records = prepare_records(frame.to_dict("records"))
+        if filename.lower().endswith(".csv"):
+            # Keep source values intact (including leading-zero CPSE codes) and
+            # avoid pandas' repeated type inference on wide extracts.
+            frame = pd.read_csv(
+                io.BytesIO(payload), dtype="string", keep_default_na=False,
+                na_filter=False, low_memory=False,
+            )
+        else:
+            frame = pd.read_excel(io.BytesIO(payload), dtype=object)
+        raw_records = frame.to_dict("records")
+        for record in raw_records:
+            # CPSE extracts commonly call this field original_description;
+            # normalize the API input while retaining the source column.
+            if not str(record.get("description", "")).strip():
+                record["description"] = record.get("original_description", "")
+        records = prepare_records(raw_records)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Unable to read {filename}: {exc}") from exc
     validation = _validation(records)
@@ -89,7 +148,14 @@ def decide_review(review_id: str, decision: ReviewDecision) -> dict[str, Any]:
 @router.get("/canonicals")
 def canonicals(search: str = "") -> dict[str, Any]:
     values = registry.search(search) if search else registry.list_canonicals()
-    return {"items": [_record(item) for item in values]}
+    items = []
+    for item in values:
+        value = _record(item)
+        value["source_records"] = [
+            registry.records[member_id] for member_id in item.member_ids
+        ]
+        items.append(value)
+    return {"items": items}
 
 
 @router.get("/mappings")

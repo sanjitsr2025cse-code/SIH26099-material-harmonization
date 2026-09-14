@@ -81,7 +81,18 @@ class MaterialRegistry:
             canonical = dict(self.records[canonical_id])
             canonical["record_id"] = canonical_id
             canonical["cnmc_id"] = cnmc_id
-            new[cnmc_id] = CanonicalMaterial(cnmc_id, canonical, member_ids)
+            metadata = self._canonical_metadata(member_ids, canonical)
+            canonical["canonical_description"] = (
+                canonical.get("description")
+                or canonical.get("original_description")
+                or canonical.get("normalized_description", "")
+            )
+            canonical["member_count"] = len(member_ids)
+            canonical["source_systems"] = metadata["source_systems"]
+            canonical["source_codes"] = metadata["source_codes"]
+            new[cnmc_id] = CanonicalMaterial(
+                cnmc_id, canonical, member_ids, metadata=metadata
+            )
         self.canonicals = new
         self._refresh_mappings()
 
@@ -174,15 +185,66 @@ class MaterialRegistry:
         for material in self.canonicals.values():
             for member_id in material.member_ids:
                 record = self.records[member_id]
-                source = str(record.get("source_system", record.get("source", "default")))
+                source = str(record.get(
+                    "source_system",
+                    record.get(
+                        "enterprise",
+                        record.get(
+                            "cpse_organization",
+                            record.get("source_organization", record.get("source", "default")),
+                        ),
+                    ),
+                ))
                 code = str(record.get("material_code", record.get("source_material_code", member_id)))
                 key = (source, code)
                 if self.mappings.get(key) == material.cnmc_id:
                     continue
                 self.mappings[key] = material.cnmc_id
                 self.mapping_history.append(MappingEvent(
-                    code, source, material.cnmc_id, member_id, "MAPPED", self._next_mapping))
+                    code,
+                    source,
+                    material.cnmc_id,
+                    member_id,
+                    "MAPPED",
+                    self._next_mapping,
+                    str(record.get("description", record.get("original_description", ""))),
+                    {
+                        "record_id": member_id,
+                        "source_material_code": code,
+                        "cnmc_version": material.version,
+                    },
+                ))
                 self._next_mapping += 1
+
+    def _canonical_metadata(
+        self, member_ids: tuple[str, ...], canonical: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Build deterministic, serializable provenance for a canonical item."""
+        members = [self.records[member_id] for member_id in member_ids]
+        sources = sorted({
+            str(record.get(
+                "source_system",
+                record.get(
+                    "enterprise",
+                    record.get(
+                        "cpse_organization",
+                        record.get("source_organization", record.get("source", "default")),
+                    ),
+                ),
+            ))
+            for record in members
+        })
+        codes = sorted({
+            str(record.get("material_code", record.get("source_material_code", member_id)))
+            for member_id, record in zip(member_ids, members)
+        })
+        return {
+            "member_count": len(member_ids),
+            "source_systems": sources,
+            "source_codes": codes,
+            "canonical_record_id": str(canonical.get("record_id", "")),
+            "category": canonical.get("category", canonical.get("material_category", "")),
+        }
 
     def list_canonicals(self) -> list[CanonicalMaterial]:
         return sorted(self.canonicals.values(), key=lambda material: material.cnmc_id)
@@ -208,7 +270,14 @@ class MaterialRegistry:
         canonical = dict(self.records[merged[0]])
         canonical["cnmc_id"] = left.cnmc_id
         self.canonicals.pop(right.cnmc_id, None)
-        self.canonicals[left.cnmc_id] = CanonicalMaterial(left.cnmc_id, canonical, merged)
+        canonical["member_count"] = len(merged)
+        metadata = self._canonical_metadata(merged, canonical)
+        canonical["source_systems"] = metadata["source_systems"]
+        canonical["source_codes"] = metadata["source_codes"]
+        self.canonicals[left.cnmc_id] = CanonicalMaterial(
+            left.cnmc_id, canonical, merged, metadata=metadata,
+            version=left.version + 1,
+        )
         self._refresh_mappings()
 
     def _map_record(self, record_id: str, cnmc_id: str) -> None:
@@ -222,13 +291,26 @@ class MaterialRegistry:
         if previous:
             remaining = tuple(member for member in previous.member_ids if member != record_id)
             if remaining:
+                metadata = self._canonical_metadata(remaining, previous.record)
+                record = dict(previous.record)
+                record["member_count"] = len(remaining)
+                record["source_systems"] = metadata["source_systems"]
+                record["source_codes"] = metadata["source_codes"]
                 self.canonicals[previous.cnmc_id] = CanonicalMaterial(
-                    previous.cnmc_id, previous.record, remaining)
+                    previous.cnmc_id, record, remaining,
+                    metadata=metadata, version=previous.version + 1,
+                )
             else:
                 self.canonicals.pop(previous.cnmc_id, None)
         merged = tuple(sorted(material.member_ids + (record_id,)))
         canonical = dict(material.record)
-        self.canonicals[cnmc_id] = CanonicalMaterial(cnmc_id, canonical, merged)
+        canonical["member_count"] = len(merged)
+        metadata = self._canonical_metadata(merged, canonical)
+        canonical["source_systems"] = metadata["source_systems"]
+        canonical["source_codes"] = metadata["source_codes"]
+        self.canonicals[cnmc_id] = CanonicalMaterial(
+            cnmc_id, canonical, merged, metadata=metadata, version=material.version + 1,
+        )
         self._refresh_mappings()
 
     def search(self, text: str) -> list[CanonicalMaterial]:

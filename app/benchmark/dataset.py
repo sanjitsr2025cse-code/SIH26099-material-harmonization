@@ -30,6 +30,10 @@ _TRANSLATIONS = {
     "valve": "VÁLVULA COMPUERTA 50 MM 150 PSI",
     "cable": "CÂBLE PUISSANCE 4 ÂMES 240 V",
 }
+_CPSE_NAMES = (
+    "NTPC", "BHEL", "IOCL", "ONGC", "GAIL",
+    "SAIL", "Coal India", "Power Grid", "BPCL", "HPCL",
+)
 
 
 def generate_dataset(size: int = 10_000, seed: int = 10_000) -> list[dict[str, Any]]:
@@ -71,7 +75,15 @@ def generate_dataset(size: int = 10_000, seed: int = 10_000) -> list[dict[str, A
             "record_id": f"cpse-{index + 1:05d}",
             "source": ("erp", "catalogue", "maintenance")[index % 3],
             "material_code": f"{family_id.upper()}-{index + 1:05d}",
+            # These fields mirror the columns commonly present in CPSE
+            # extracts and make the fixture useful for upload/API exercises.
+            "source_material_code": f"{family_id.upper()}-{index + 1:05d}",
+            "enterprise": _CPSE_NAMES[index % len(_CPSE_NAMES)],
+            "plant": f"PLANT-{index % 12 + 1:02d}",
+            "material_group": family_id,
+            "base_unit": "EA",
             "description": description,
+            "original_description": description,
             "attributes": dict(attrs),
             "ground_truth_group": family_id,
             "variant": variant,
@@ -94,6 +106,11 @@ def demo_dataset_csv(size: int = 10_000, seed: int = 10_000) -> bytes:
         "record_id",
         "source",
         "material_code",
+        "source_material_code",
+        "enterprise",
+        "plant",
+        "material_group",
+        "base_unit",
         "description",
         "attributes",
         "ground_truth_group",
@@ -103,7 +120,7 @@ def demo_dataset_csv(size: int = 10_000, seed: int = 10_000) -> bytes:
     writer = csv.DictWriter(output, fieldnames=fieldnames)
     writer.writeheader()
     for record in generate_dataset(size=size, seed=seed):
-        row = dict(record)
+        row = {key: record[key] for key in fieldnames}
         row["attributes"] = json.dumps(row["attributes"], ensure_ascii=False, sort_keys=True)
         writer.writerow(row)
     return output.getvalue().encode("utf-8")

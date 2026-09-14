@@ -28,7 +28,7 @@ def export_dataset(output: Path = OUTPUT, size: int = 10_000) -> Path:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
         for record in records:
-            row = dict(record)
+            row = {key: record[key] for key in fieldnames}
             row["attributes"] = json.dumps(row["attributes"], ensure_ascii=False, sort_keys=True)
             writer.writerow(row)
     return output

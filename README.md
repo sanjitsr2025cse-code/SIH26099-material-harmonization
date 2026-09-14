@@ -162,6 +162,13 @@ removes its temporary `cpse-*` rows after reporting. In particular,
 `STEEL BOLT M10 GRADE B` and `STEEL BOLT M10 GRADE C` are explicitly checked
 never to merge because Grade is a hard attribute.
 
+The generated CPSE fixture also includes source provenance columns
+(`source_material_code`, `enterprise`, `plant`, `material_group`, and
+`base_unit`). Canonical API responses expose deterministic member/source
+metadata, while mapping events retain the source description and record
+provenance. Upload validation returns structured quality issues and preserves
+leading-zero source codes.
+
 See [docs/architecture.md](docs/architecture.md), [AI_CONTEXT.md](AI_CONTEXT.md),
 and [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md) for the project boundaries
 and working rules.

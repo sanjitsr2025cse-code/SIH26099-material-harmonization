@@ -1,49 +1,49 @@
 record_id,cpse_organization,source_organization,material_code,original_description,attributes,ground_truth_group,variant
-cpse-00011,NTPC,catalogue,GASKET-00011,MATÉRIEL SPIRAL WOUND GASKET DN50,"{""size"": ""DN50"", ""standard"": ""ASME B16.20""}",gasket,multilingual
-cpse-00001,NTPC,erp,BOLT_B-00001,STEEL BOLT M10 GRADE B,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4014""}",bolt_b,multilingual
-cpse-00007,Coal India,erp,UNRELATED_0-00007,UNRELATED MATERIAL 0 CERAMIC LINER,"{""size"": ""100 mm"", ""standard"": ""CPSE-OTHER""}",unrelated_0,multilingual
-cpse-00013,IOCL,erp,BOLT_B-00013,STEEL FASTENER M10 GRADE B,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4014""}",bolt_b,multilingual
-cpse-00033,IOCL,maintenance,BEARING-00033,DEEP GROOVE BALL BEARING 6205,"{""size"": ""6205"", ""standard"": ""ISO 15""}",bearing,multilingual
-cpse-00026,SAIL,catalogue,BOLT_C-00026,STEEL BOLT 10 mm GRADE C,"{""grade"": ""C"", ""size"": ""M10"", ""standard"": ""ISO 4014""}",bolt_c,multilingual
-cpse-00024,ONGC,maintenance,MOTOR-00024,INDUCTION MOTOR 5 KW 415 V,"{""size"": ""5 kW"", ""voltage"": ""415 V""}",motor,multilingual
-cpse-00028,Power Grid,erp,UNRELATED_2-00028,UNRELATED MATERIAL 2 CERAMIC LINER,"{""size"": ""102 mm"", ""standard"": ""CPSE-OTHER""}",unrelated_2,multilingual
-cpse-00018,Power Grid,maintenance,PIPE-00018,TUBO ACERO CARBONO 50 MM SCH 40,"{""size"": ""50 mm"", ""standard"": ""ASTM A106""}",pipe,multilingual
-cpse-00035,GAIL,catalogue,UNRELATED_2-00035,UNRELATED MATERIAL 2 CERAMIC LINER,"{""size"": ""102 mm"", ""standard"": ""CPSE-OTHER""}",unrelated_2,multilingual
-cpse-00021,NTPC,maintenance,UNRELATED_1-00021,UNRELATED MATERIAL 1 CERAMIC LINER,"{""size"": ""101 mm"", ""standard"": ""CPSE-OTHER""}",unrelated_1,multilingual
-cpse-00016,SAIL,erp,NUT_M10-00016,CARBON STEEL HEX NUT M10 GRADE B,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4032""}",nut_m10,multilingual
-cpse-00034,ONGC,erp,FLANGE-00034,WELD NECK FLANGE DN50 PN16,"{""pressure"": ""PN16"", ""size"": ""DN50"", ""standard"": ""EN 1092""}",flange,multilingual
-cpse-00041,NTPC,catalogue,WASHER-00041,STEEL WASHER M10,"{""size"": ""M10"", ""standard"": ""ISO 7089""}",washer,multilingual
-cpse-00040,HPCL,erp,NUT_M10-00040,STEEL HEX NUT 10 mm GRADE B,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4032""}",nut_m10,multilingual
-cpse-00012,BHEL,maintenance,MOTOR-00012,INDUCTION MOTOR 5 KW 415 V,"{""size"": ""5 kW"", ""voltage"": ""415 V""}",motor,multilingual
-cpse-00037,Coal India,erp,BOLT_B-00037,CARBON STEEL HEX BOLT M10 GRADE B,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4014""}",bolt_b,multilingual
-cpse-00027,Coal India,maintenance,BOLT_M12-00027,STEEL FASTENER M12 GRADE B,"{""grade"": ""B"", ""size"": ""M12"", ""standard"": ""ISO 4014""}",bolt_m12,multilingual
-cpse-00043,IOCL,erp,VALVE-00043,GATE VALVE 50 MM 150 PSI,"{""pressure"": ""150 psi"", ""size"": ""50 mm"", ""standard"": ""API 600""}",valve,multilingual
-cpse-00031,NTPC,erp,VALVE-00031,GATE VALVE 50 MM 150 PSI,"{""pressure"": ""150 psi"", ""size"": ""50 mm"", ""standard"": ""API 600""}",valve,multilingual
-cpse-00029,BPCL,catalogue,WASHER-00029,STEEL WASHER M10,"{""size"": ""M10"", ""standard"": ""ISO 7089""}",washer,multilingual
-cpse-00019,BPCL,erp,VALVE-00019,GATE VALVE 50mm 150 PSI,"{""pressure"": ""150 psi"", ""size"": ""50 mm"", ""standard"": ""API 600""}",valve,multilingual
-cpse-00048,Power Grid,maintenance,MOTOR-00048,INDUCTION MOTOR 5 KW 415 V,"{""size"": ""5 kW"", ""voltage"": ""415 V""}",motor,multilingual
-cpse-00036,SAIL,maintenance,MOTOR-00036,INDUCTION MOTOR 5 KW 415 V,"{""size"": ""5 kW"", ""voltage"": ""415 V""}",motor,multilingual
-cpse-00010,HPCL,erp,FLANGE-00010,WELD NECK FLANGE DN50 PN16,"{""pressure"": ""PN16"", ""size"": ""DN50"", ""standard"": ""EN 1092""}",flange,multilingual
-cpse-00017,Coal India,catalogue,WASHER-00017,STL WASHER M10,"{""size"": ""M10"", ""standard"": ""ISO 7089""}",washer,multilingual
-cpse-00020,HPCL,catalogue,CABLE-00020,POWER CABLE 4 CORE 240 V,"{""size"": ""4 core"", ""voltage"": ""240 V""}",cable,multilingual
-cpse-00044,ONGC,catalogue,CABLE-00044,POWER CABLE 4 CORE 240 V,"{""size"": ""4 core"", ""voltage"": ""240 V""}",cable,multilingual
-cpse-00023,IOCL,catalogue,GASKET-00023,SPIRAL WOUND GASKET DN50,"{""size"": ""DN50"", ""standard"": ""ASME B16.20""}",gasket,multilingual
-cpse-00004,ONGC,erp,NUT_M10-00004,MATÉRIEL STEEL HEX NUT M10 GRADE B,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4032""}",nut_m10,multilingual
-cpse-00038,Power Grid,catalogue,BOLT_C-00038,STL BLT M10 GR C,"{""grade"": ""C"", ""size"": ""M10"", ""standard"": ""ISO 4014""}",bolt_c,multilingual
-cpse-00003,IOCL,maintenance,BOLT_M12-00003,STL BLT M12 GR B,"{""grade"": ""B"", ""size"": ""M12"", ""standard"": ""ISO 4014""}",bolt_m12,multilingual
-cpse-00002,BHEL,catalogue,BOLT_C-00002,CARBON STEEL HEX BOLT M10 GRADE C,"{""grade"": ""C"", ""size"": ""M10"", ""standard"": ""ISO 4014""}",bolt_c,multilingual
-cpse-00015,GAIL,maintenance,BOLT_M12-00015,STEEL BOLT M12 GRADE B,"{""grade"": ""B"", ""size"": ""M12"", ""standard"": ""ISO 4014""}",bolt_m12,multilingual
-cpse-00009,BPCL,maintenance,BEARING-00009,DEEP GROOVE BALL BEARING 6205,"{""size"": ""6205"", ""standard"": ""ISO 15""}",bearing,multilingual
-cpse-00006,SAIL,maintenance,PIPE-00006,CARBON STEEL TUBE 50 MM SCH 40,"{""size"": ""50 mm"", ""standard"": ""ASTM A106""}",pipe,multilingual
-cpse-00032,BHEL,catalogue,CABLE-00032,CÂBLE PUISSANCE 4 ÂMES 240 V,"{""size"": ""4 core"", ""voltage"": ""240 V""}",cable,multilingual
-cpse-00042,BHEL,maintenance,UNRELATED_3-00042,UNRELATED MATERIAL 3 CERAMIC LINER,"{""size"": ""103 mm"", ""standard"": ""CPSE-OTHER""}",unrelated_3,multilingual
-cpse-00022,BHEL,erp,FLANGE-00022,WELD NECK FLANGE DN50 PN16,"{""pressure"": ""PN16"", ""size"": ""DN50"", ""standard"": ""EN 1092""}",flange,multilingual
-cpse-00047,Coal India,catalogue,GASKET-00047,SPIRAL WOUND GASKET DN50,"{""size"": ""DN50"", ""standard"": ""ASME B16.20""}",gasket,multilingual
-cpse-00025,GAIL,erp,BOLT_B-00025,БОЛТ СТАЛЬ M10 КЛАСС B,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4014""}",bolt_b,multilingual
-cpse-00008,Power Grid,catalogue,CABLE-00008,POWER CABLE 4 CORE 240 V,"{""size"": ""4 core"", ""voltage"": ""240 V""}",cable,multilingual
-cpse-00039,BPCL,maintenance,BOLT_M12-00039,MATÉRIEL STEEL BOLT M12 GRADE B,"{""grade"": ""B"", ""size"": ""M12"", ""standard"": ""ISO 4014""}",bolt_m12,multilingual
-cpse-00005,GAIL,catalogue,WASHER-00005,STEEL WASHER 10 mm,"{""size"": ""M10"", ""standard"": ""ISO 7089""}",washer,multilingual
-cpse-00014,ONGC,catalogue,UNRELATED_1-00014,UNRELATED MATERIAL 1 CERAMIC LINER,"{""size"": ""101 mm"", ""standard"": ""CPSE-OTHER""}",unrelated_1,multilingual
-cpse-00045,GAIL,maintenance,BEARING-00045,DEEP GROOVE BALL BEARING 6205,"{""size"": ""6205"", ""standard"": ""ISO 15""}",bearing,multilingual
-cpse-00030,HPCL,maintenance,PIPE-00030,CARBON CARBON STEEL PIPE 50 MM SCH 40,"{""size"": ""50 mm"", ""standard"": ""ASTM A106""}",pipe,multilingual
-cpse-00046,SAIL,erp,FLANGE-00046,MATÉRIEL WELD NECK FLANGE DN50 PN16,"{""pressure"": ""PN16"", ""size"": ""DN50"", ""standard"": ""EN 1092""}",flange,multilingual
+cpse-00011,NTPC,maintenance,NTP-EQUIVALENT_0002-00011,ITEM 0002 STEEL HEX BOLT M12 GRADE B,"{""grade"": ""B"", ""size"": ""M12"", ""standard"": ""ISO 4014-0002""}",equivalent_0002,multilingual
+cpse-00001,NTPC,catalogue,NTP-EQUIVALENT_0000-00001,STEEL BOLT M10 GRADE B ITEM 0000,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4014-0000""}",equivalent_0000,multilingual
+cpse-00007,Coal India,catalogue,COA-EQUIVALENT_0001-00007,ITEM 0001 STEEL HEX BOLT M10 GRADE C,"{""grade"": ""C"", ""size"": ""M10"", ""standard"": ""ISO 4014-0001""}",equivalent_0001,multilingual
+cpse-00013,IOCL,catalogue,IOC-EQUIVALENT_0003-00013,STEEL HEX NUT M10 GRADE B ITEM 0003,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4032-0003""}",equivalent_0003,multilingual
+cpse-00033,IOCL,erp,IOC-EQUIVALENT_0008-00033,DEEP GROOVE BALL BEARING 6205 ITEM 0008,"{""size"": ""6205"", ""standard"": ""ISO 15-0008""}",equivalent_0008,multilingual
+cpse-00026,SAIL,maintenance,SAI-EQUIVALENT_0006-00026,GATE VALVE 50 MM 150 PSI ITEM 0006,"{""pressure"": ""150 psi"", ""size"": ""50 mm"", ""standard"": ""API 600-0006""}",equivalent_0006,multilingual
+cpse-00024,ONGC,erp,ONG-EQUIVALENT_0005-00024,CARBON STEEL PIPE 50 MM SCH 40 बोल्ट ITEM 0005,"{""size"": ""50 mm"", ""standard"": ""ASTM A106-0005""}",equivalent_0005,multilingual
+cpse-00028,Power Grid,catalogue,POW-EQUIVALENT_0006-00028,GATE VALVE 50mm 150 PSI ITEM 0006,"{""pressure"": ""150 psi"", ""size"": ""50 mm"", ""standard"": ""API 600-0006""}",equivalent_0006,multilingual
+cpse-00018,Power Grid,erp,POW-EQUIVALENT_0004-00018,STEEL WASHER M10 ITEM 0004,"{""size"": ""M10"", ""standard"": ""ISO 7089-0004""}",equivalent_0004,multilingual
+cpse-00035,GAIL,maintenance,GAI-EQUIVALENT_0008-00035,ITEM 0008 DEEP GROOVE BALL BEARING 6205,"{""size"": ""6205"", ""standard"": ""ISO 15-0008""}",equivalent_0008,multilingual
+cpse-00021,NTPC,erp,NTP-EQUIVALENT_0005-00021,CARBON STEEL PIPE 50 MM SCH 40 ITEM 0005,"{""size"": ""50 mm"", ""standard"": ""ASTM A106-0005""}",equivalent_0005,multilingual
+cpse-00016,SAIL,catalogue,SAI-EQUIVALENT_0003-00016,STEEL HEX NUT 10 mm GRADE B ITEM 0003,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4032-0003""}",equivalent_0003,multilingual
+cpse-00034,ONGC,catalogue,ONG-EQUIVALENT_0008-00034,DEEP GROOVE BALL BEARING 6205 ITEM 0008,"{""size"": ""6205"", ""standard"": ""ISO 15-0008""}",equivalent_0008,multilingual
+cpse-00041,NTPC,maintenance,NTP-NEAR_MISS_0002_A-00041,WELD NECK FLANGE DN50 PN16 ITEM NM0002,"{""pressure"": ""PN16"", ""size"": ""DN50"", ""standard"": ""EN 1092""}",near_miss_0002_a,multilingual
+cpse-00040,HPCL,catalogue,HPC-NEAR_MISS_0001_B-00040,POWER CABLE 4 CORE 415 V ITEM NM0001,"{""size"": ""4 core"", ""voltage"": ""415 V""}",near_miss_0001_b,multilingual
+cpse-00012,BHEL,erp,BHE-EQUIVALENT_0002-00012,STEEL BOLT M12 GRADE B ITEM 0002,"{""grade"": ""B"", ""size"": ""M12"", ""standard"": ""ISO 4014-0002""}",equivalent_0002,multilingual
+cpse-00037,Coal India,catalogue,COA-BOLT_B-00037,STEEL BOLT M10 GRADE B ITEM NM0000,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4014""}",bolt_b,multilingual
+cpse-00027,Coal India,erp,COA-EQUIVALENT_0006-00027,ITEM 0006 GATE VALVE 50 MM 150 PSI,"{""pressure"": ""150 psi"", ""size"": ""50 mm"", ""standard"": ""API 600-0006""}",equivalent_0006,multilingual
+cpse-00043,IOCL,catalogue,IOC-NEAR_MISS_0003_A-00043,CARBON STEEL PIPE 10 MM SCH 40 ITEM NM0003,"{""size"": ""10 mm"", ""standard"": ""ASTM A106""}",near_miss_0003_a,multilingual
+cpse-00031,NTPC,catalogue,NTP-EQUIVALENT_0007-00031,ITEM 0007 POWER CABLE 4 CORE 240 V,"{""size"": ""4 core"", ""standard"": ""CPSE-0007"", ""voltage"": ""240 V""}",equivalent_0007,multilingual
+cpse-00029,BPCL,maintenance,BPC-EQUIVALENT_0007-00029,POWER CABLE 4 CORE 240 V ITEM 0007,"{""size"": ""4 core"", ""standard"": ""CPSE-0007"", ""voltage"": ""240 V""}",equivalent_0007,multilingual
+cpse-00019,BPCL,catalogue,BPC-EQUIVALENT_0004-00019,ITEM 0004 STEEL WASHER M10,"{""size"": ""M10"", ""standard"": ""ISO 7089-0004""}",equivalent_0004,multilingual
+cpse-00048,Power Grid,erp,POW-NEAR_MISS_0005_B-00048,POWER CABLE 4 CORE 415 V ITEM NM0005,"{""size"": ""4 core"", ""voltage"": ""415 V""}",near_miss_0005_b,multilingual
+cpse-00036,SAIL,erp,SAI-EQUIVALENT_0008-00036,DEEP GROOVE BALL BEARING 6205 ITEM 0008,"{""size"": ""6205"", ""standard"": ""ISO 15-0008""}",equivalent_0008,multilingual
+cpse-00010,HPCL,catalogue,HPC-EQUIVALENT_0002-00010,STEEL BOLT M12 GR B ITEM 0002,"{""grade"": ""B"", ""size"": ""M12"", ""standard"": ""ISO 4014-0002""}",equivalent_0002,multilingual
+cpse-00017,Coal India,maintenance,COA-EQUIVALENT_0004-00017,STEEL WASHER M10 ITEM 0004,"{""size"": ""M10"", ""standard"": ""ISO 7089-0004""}",equivalent_0004,multilingual
+cpse-00020,HPCL,maintenance,HPC-EQUIVALENT_0004-00020,STEEL WASHER 10 mm ITEM 0004,"{""size"": ""M10"", ""standard"": ""ISO 7089-0004""}",equivalent_0004,multilingual
+cpse-00044,ONGC,maintenance,ONG-NEAR_MISS_0003_B-00044,CARBON STEEL PIPE 12 MM SCH 40 ITEM NM0003,"{""size"": ""12 mm"", ""standard"": ""ASTM A106""}",near_miss_0003_b,multilingual
+cpse-00023,IOCL,maintenance,IOC-EQUIVALENT_0005-00023,ITEM 0005 CARBON STEEL PIPE 50 MM SCH 40,"{""size"": ""50 mm"", ""standard"": ""ASTM A106-0005""}",equivalent_0005,multilingual
+cpse-00004,ONGC,catalogue,ONG-EQUIVALENT_0000-00004,STEEL BOLT M10 GRADE B बोल्ट ITEM 0000,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4014-0000""}",equivalent_0000,multilingual
+cpse-00038,Power Grid,maintenance,POW-BOLT_C-00038,STEEL BOLT M10 GRADE C ITEM NM0000,"{""grade"": ""C"", ""size"": ""M10"", ""standard"": ""ISO 4014""}",bolt_c,multilingual
+cpse-00003,IOCL,erp,IOC-EQUIVALENT_0000-00003,ITEM 0000 STEEL HEX BOLT M10 GRADE B,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4014-0000""}",equivalent_0000,multilingual
+cpse-00002,BHEL,maintenance,BHE-EQUIVALENT_0000-00002,STEEL BOLT M10 GR B ITEM 0000,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4014-0000""}",equivalent_0000,multilingual
+cpse-00015,GAIL,erp,GAI-EQUIVALENT_0003-00015,ITEM 0003 STEEL HEX NUT M10 GRADE B,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4032-0003""}",equivalent_0003,multilingual
+cpse-00009,BPCL,erp,BPC-EQUIVALENT_0002-00009,STEEL BOLT M12 GRADE B ITEM 0002,"{""grade"": ""B"", ""size"": ""M12"", ""standard"": ""ISO 4014-0002""}",equivalent_0002,multilingual
+cpse-00006,SAIL,erp,SAI-EQUIVALENT_0001-00006,STEEL BOLT M10 GR C ITEM 0001,"{""grade"": ""C"", ""size"": ""M10"", ""standard"": ""ISO 4014-0001""}",equivalent_0001,multilingual
+cpse-00032,BHEL,maintenance,BHE-EQUIVALENT_0007-00032,POWER CABLE 4 CORE 240VAC ITEM 0007,"{""size"": ""4 core"", ""standard"": ""CPSE-0007"", ""voltage"": ""240 V""}",equivalent_0007,multilingual
+cpse-00042,BHEL,erp,BHE-NEAR_MISS_0002_B-00042,WELD NECK FLANGE DN50 PN40 ITEM NM0002,"{""pressure"": ""PN40"", ""size"": ""DN50"", ""standard"": ""EN 1092""}",near_miss_0002_b,multilingual
+cpse-00022,BHEL,catalogue,BHE-EQUIVALENT_0005-00022,CARBON STEEL PIPE 50 MM SCH 40 ITEM 0005,"{""size"": ""50 mm"", ""standard"": ""ASTM A106-0005""}",equivalent_0005,multilingual
+cpse-00047,Coal India,maintenance,COA-NEAR_MISS_0005_A-00047,POWER CABLE 4 CORE 240 V ITEM NM0005,"{""size"": ""4 core"", ""voltage"": ""240 V""}",near_miss_0005_a,multilingual
+cpse-00025,GAIL,catalogue,GAI-EQUIVALENT_0006-00025,GATE VALVE 50 MM 150 PSI ITEM 0006,"{""pressure"": ""150 psi"", ""size"": ""50 mm"", ""standard"": ""API 600-0006""}",equivalent_0006,multilingual
+cpse-00008,Power Grid,maintenance,POW-EQUIVALENT_0001-00008,STEEL BOLT 10 mm GRADE C ITEM 0001,"{""grade"": ""C"", ""size"": ""M10"", ""standard"": ""ISO 4014-0001""}",equivalent_0001,multilingual
+cpse-00039,BPCL,erp,BPC-NEAR_MISS_0001_A-00039,POWER CABLE 4 CORE 240 V ITEM NM0001,"{""size"": ""4 core"", ""voltage"": ""240 V""}",near_miss_0001_a,multilingual
+cpse-00005,GAIL,maintenance,GAI-EQUIVALENT_0001-00005,STEEL BOLT M10 GRADE C ITEM 0001,"{""grade"": ""C"", ""size"": ""M10"", ""standard"": ""ISO 4014-0001""}",equivalent_0001,multilingual
+cpse-00014,ONGC,maintenance,ONG-EQUIVALENT_0003-00014,STEEL HEX NUT M10 GR B ITEM 0003,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4032-0003""}",equivalent_0003,multilingual
+cpse-00045,GAIL,erp,GAI-NEAR_MISS_0004_A-00045,STEEL BOLT M10 GRADE B ITEM NM0004,"{""grade"": ""B"", ""size"": ""M10"", ""standard"": ""ISO 4014""}",near_miss_0004_a,multilingual
+cpse-00030,HPCL,erp,HPC-EQUIVALENT_0007-00030,POWER CABLE 4 CORE 240 V ITEM 0007,"{""size"": ""4 core"", ""standard"": ""CPSE-0007"", ""voltage"": ""240 V""}",equivalent_0007,multilingual
+cpse-00046,SAIL,catalogue,SAI-NEAR_MISS_0004_B-00046,STEEL BOLT M10 GRADE C ITEM NM0004,"{""grade"": ""C"", ""size"": ""M10"", ""standard"": ""ISO 4014""}",near_miss_0004_b,multilingual

@@ -84,6 +84,7 @@ def test_actual_10k_cpse_upload_accounts_rows_and_mappings():
             "/api/materials/upload",
             files={"file": ("dataset_H.csv", BytesIO(payload), "text/csv")},
         )
+        canonicals = TestClient(app).get("/api/materials/canonicals").json()["items"]
     finally:
         materials_route.registry = previous
     assert response.status_code == 200
@@ -92,3 +93,28 @@ def test_actual_10k_cpse_upload_accounts_rows_and_mappings():
     assert body["validation"]["valid"] is True
     assert body["statistics"]["records"] == 10_000
     assert body["statistics"]["mappings"] == 10_000
+    assert 3_000 <= body["statistics"]["canonical_materials"] <= 4_000
+    assert sum(len(item["member_ids"]) > 1 for item in canonicals) >= 1_900
+    assert sum(
+        len({
+            record.get("enterprise", record.get("cpse_organization"))
+            for record in item["source_records"]
+        }) > 1
+        for item in canonicals
+    ) >= 1_900
+    groups = {}
+    for item in canonicals:
+        for record in item["source_records"]:
+            groups.setdefault(record["ground_truth_group"], set()).add(item["cnmc_id"])
+    near_miss_groups = {
+        group for group in groups if group.startswith("near_miss_")
+    }
+    assert near_miss_groups
+    for group in near_miss_groups:
+        assert len(groups[group]) == 1
+    for group_number in range(250):
+        left_key = "bolt_b" if group_number == 0 else f"near_miss_{group_number:04d}_a"
+        right_key = "bolt_c" if group_number == 0 else f"near_miss_{group_number:04d}_b"
+        left = groups[left_key]
+        right = groups[right_key]
+        assert left.isdisjoint(right)

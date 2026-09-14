@@ -46,48 +46,104 @@ def generate_dataset(size: int = 10_000, seed: int = 10_000) -> list[dict[str, A
         raise ValueError("size must be positive")
     rng = random.Random(seed)
     records: list[dict[str, Any]] = []
-    for index in range(size):
-        family_id, canonical, attrs = _FAMILIES[index % len(_FAMILIES)]
-        variant = ("exact", "near_duplicate", "abbreviation", "multilingual",
-                   "unit_format", "terminology", "unrelated")[index % 7]
-        # A deterministic set of unrelated products exercises false-positive safety.
-        if variant == "unrelated":
-            unrelated_number = index // len(_FAMILIES)
-            family_id = f"unrelated_{unrelated_number}"
-            canonical = f"UNRELATED MATERIAL {unrelated_number} CERAMIC LINER"
-            attrs = {"size": f"{100 + unrelated_number} mm", "standard": "CPSE-OTHER"}
-        description = canonical
-        if variant == "near_duplicate":
-            description = canonical.replace("STEEL", "CARBON STEEL").replace("BOLT", "HEX BOLT")
-        elif variant == "abbreviation":
-            for source, target in _ABBREVIATIONS.items():
-                description = description.replace(source, target)
-        elif variant == "multilingual":
-            description = _TRANSLATIONS.get(family_id, f"MATÉRIEL {canonical}")
-        elif variant == "unit_format":
-            description = description.replace("50 MM", "50mm").replace("M10", "10 mm").replace("240 V", "240VAC")
-        elif variant == "terminology":
-            description = description.replace("BOLT", "FASTENER").replace("PIPE", "TUBE")
-        if variant == "near_duplicate" and family_id in ("bolt_b", "bolt_c"):
-            # Keep B and C as separate labelled groups despite lexical similarity.
-            pass
+    equivalent_groups = min(2_000, size // 5)
+    near_miss_groups = min(250, max(0, (size - equivalent_groups * 4) // 2))
+    singleton_count = size - equivalent_groups * 4 - near_miss_groups * 2
+    record_number = 0
+
+    def add_record(
+        group_id: str,
+        description: str,
+        attrs: dict[str, str],
+        variant: str,
+        cpse_index: int,
+    ) -> None:
+        nonlocal record_number
+        record_number += 1
+        cpse = _CPSE_NAMES[cpse_index % len(_CPSE_NAMES)]
+        material_code = f"{cpse[:3].upper()}-{group_id.upper()}-{record_number:05d}"
         records.append({
-            "record_id": f"cpse-{index + 1:05d}",
-            "source": ("erp", "catalogue", "maintenance")[index % 3],
-            "material_code": f"{family_id.upper()}-{index + 1:05d}",
-            # These fields mirror the columns commonly present in CPSE
-            # extracts and make the fixture useful for upload/API exercises.
-            "source_material_code": f"{family_id.upper()}-{index + 1:05d}",
-            "enterprise": _CPSE_NAMES[index % len(_CPSE_NAMES)],
-            "plant": f"PLANT-{index % 12 + 1:02d}",
-            "material_group": family_id,
+            "record_id": f"cpse-{record_number:05d}",
+            "source": ("erp", "catalogue", "maintenance")[record_number % 3],
+            "material_code": material_code,
+            "source_material_code": material_code,
+            "enterprise": cpse,
+            "plant": f"PLANT-{record_number % 12 + 1:02d}",
+            "material_group": group_id,
             "base_unit": "EA",
             "description": description,
             "original_description": description,
             "attributes": dict(attrs),
-            "ground_truth_group": family_id,
+            "ground_truth_group": group_id,
             "variant": variant,
         })
+
+    # Four different CPSE local identities intentionally describe each
+    # equivalent material. The shared item token keeps distinct groups apart
+    # while allowing terminology and formatting variations to match.
+    for group_number in range(equivalent_groups):
+        family_id, canonical, attrs = _FAMILIES[group_number % len(_FAMILIES)]
+        group_id = f"equivalent_{group_number:04d}"
+        attrs = dict(attrs)
+        attrs["standard"] = f"{attrs.get('standard', 'CPSE')}-{group_number:04d}"
+        item_token = f"ITEM {group_number:04d}"
+        multilingual_description = (
+            f"{canonical} बोल्ट ITEM {group_number:04d}"
+            if group_number % 5 == 0
+            else f"{canonical.replace('50 MM', '50mm').replace('M10', '10 mm').replace('240 V', '240VAC')} {item_token}"
+        )
+        descriptions = (
+            f"{canonical} {item_token}",
+            f"{canonical.replace('GRADE', 'GR')} {item_token}",
+            f"{item_token} {canonical.replace('BOLT', 'HEX BOLT')}",
+            multilingual_description,
+        )
+        variants = ("exact", "abbreviation", "terminology",
+                    "multilingual" if group_number % 5 == 0 else "unit_format")
+        for member, (description, variant) in enumerate(zip(descriptions, variants)):
+            add_record(group_id, description, attrs, variant, group_number * 4 + member)
+
+    # Hard-attribute near misses use almost identical text but intentionally
+    # conflicting Grade, Voltage, Pressure, or Size values.
+    near_miss_specs = (
+        ("STEEL BOLT M10 GRADE B", {"grade": "B", "size": "M10", "standard": "ISO 4014"},
+         "STEEL BOLT M10 GRADE C", {"grade": "C", "size": "M10", "standard": "ISO 4014"}),
+        ("POWER CABLE 4 CORE 240 V", {"size": "4 core", "voltage": "240 V"},
+         "POWER CABLE 4 CORE 415 V", {"size": "4 core", "voltage": "415 V"}),
+        ("WELD NECK FLANGE DN50 PN16", {"size": "DN50", "pressure": "PN16", "standard": "EN 1092"},
+         "WELD NECK FLANGE DN50 PN40", {"size": "DN50", "pressure": "PN40", "standard": "EN 1092"}),
+        ("CARBON STEEL PIPE 10 MM SCH 40", {"size": "10 mm", "standard": "ASTM A106"},
+         "CARBON STEEL PIPE 12 MM SCH 40", {"size": "12 mm", "standard": "ASTM A106"}),
+    )
+    for group_number in range(near_miss_groups):
+        spec = near_miss_specs[group_number % len(near_miss_specs)]
+        for side in range(2):
+            description, attrs = spec[side * 2], spec[side * 2 + 1]
+            group_id = (
+                ("bolt_b" if side == 0 else "bolt_c")
+                if group_number == 0
+                else f"near_miss_{group_number:04d}_{'a' if side == 0 else 'b'}"
+            )
+            add_record(
+                group_id,
+                f"{description} ITEM NM{group_number:04d}",
+                attrs,
+                "near_duplicate",
+                equivalent_groups * 4 + group_number * 2 + side,
+            )
+
+    # Singleton records remain genuinely unique and are not forced into any
+    # existing canonical group.
+    for singleton_number in range(singleton_count):
+        group_id = f"singleton_{singleton_number:04d}"
+        description = f"UNIQUE CPSE MATERIAL {singleton_number:04d} CERAMIC LINER"
+        add_record(
+            group_id,
+            description,
+            {"size": f"{1000 + singleton_number} mm", "standard": "CPSE-OTHER"},
+            "unrelated",
+            equivalent_groups * 4 + near_miss_groups * 2 + singleton_number,
+        )
     rng.shuffle(records)
     return records
 

@@ -43,6 +43,7 @@ def run_benchmark(
     use_postgres: bool = False,
     pipeline: MaterialPipeline | None = None,
     matcher: MaterialMatcher | None = None,
+    fast: bool = False,
 ) -> BenchmarkResult:
     total_started = perf_counter()
     source = [dict(record) for record in records]
@@ -81,6 +82,7 @@ def run_benchmark(
     if use_postgres and repository is None:
         raise ValueError("repository is required when use_postgres=True")
     index = InMemoryCosineIndex()
+    blocked_indexes: dict[tuple[tuple[str, str], ...], InMemoryCosineIndex] = {}
     representatives: list[dict[str, Any]] = []
     decisions: list[tuple[str, str, str, bool]] = []
     decision_counts = {"EQUIVALENT": 0, "REVIEW": 0, "DIFFERENT": 0}
@@ -92,18 +94,34 @@ def run_benchmark(
     try:
         for record in processed:
             search_started = perf_counter()
-            candidates = (
-                retriever.top_k(
+            if retriever is not None:
+                candidates = retriever.top_k(
                     record["embedding"], 1, exclude_record_id=record["record_id"]
                 )
-                if retriever is not None
-                else index.top_k(record["embedding"], 1)
-            )
+            elif fast:
+                signature = tuple(sorted(
+                    (name, str(record.get("extracted_attributes", {}).get(name)).casefold())
+                    for name in matcher.config.hard_attributes
+                    if name in record.get("extracted_attributes", {})
+                ))
+                candidate_index = blocked_indexes.get(signature)
+                candidates = (
+                    candidate_index.top_k(record["embedding"], 1)
+                    if candidate_index is not None
+                    else []
+                )
+            else:
+                candidates = index.top_k(record["embedding"], 1)
             search_elapsed += perf_counter() - search_started
             if not candidates:
                 representatives.append(record)
                 if retriever is None:
-                    index.add(record["record_id"], record["embedding"], {})
+                    if fast:
+                        blocked_indexes.setdefault(signature, InMemoryCosineIndex()).add(
+                            record["record_id"], record["embedding"], {}
+                        )
+                    else:
+                        index.add(record["record_id"], record["embedding"], {})
                 continue
             representative = processed_by_id[candidates[0].record_id]
             match_started = perf_counter()
@@ -117,7 +135,12 @@ def run_benchmark(
             if result.decision != "EQUIVALENT":
                 representatives.append(record)
                 if retriever is None:
-                    index.add(record["record_id"], record["embedding"], {})
+                    if fast:
+                        blocked_indexes.setdefault(signature, InMemoryCosineIndex()).add(
+                            record["record_id"], record["embedding"], {}
+                        )
+                    else:
+                        index.add(record["record_id"], record["embedding"], {})
     finally:
         if connection_context:
             connection_context.__exit__(None, None, None)

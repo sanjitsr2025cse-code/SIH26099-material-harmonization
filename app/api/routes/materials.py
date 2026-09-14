@@ -51,6 +51,8 @@ def _review_metrics() -> dict[str, int]:
         if status == "PENDING":
             pending_records.update((item.left_id, item.right_id))
     counts["UNIQUE_MATERIALS_REQUIRING_REVIEW"] = len(pending_records)
+    counts["pending_review_pairs"] = counts["PENDING"]
+    counts["unique_materials_requiring_review"] = len(pending_records)
     return counts
 
 
@@ -165,7 +167,7 @@ def mappings() -> dict[str, Any]:
 
 @router.get("/benchmark")
 def benchmark() -> dict[str, Any]:
-    result = run_benchmark(generate_dataset(size=10_000))
+    result = run_benchmark(generate_dataset(size=10_000), fast=True)
     return result.as_dict()
 
 

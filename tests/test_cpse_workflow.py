@@ -8,6 +8,7 @@ from app.api.routes.materials import _validation
 from app.api.routes import materials as materials_route
 from app.benchmark.dataset import generate_dataset
 from app.product import MaterialRegistry
+from app.product.models import AIDecision, ReviewItem
 from app.main import app
 
 
@@ -72,6 +73,26 @@ def test_upload_validation_reports_structured_quality_issues():
         "missing_description",
         "duplicate_row",
     }
+
+
+def test_review_metrics_are_bounded_by_pending_pair_records():
+    previous = materials_route.registry
+    materials_route.registry = MaterialRegistry()
+    try:
+        materials_route.registry.review.add(ReviewItem(
+            "review-1", "record-a", "record-b",
+            AIDecision("record-a", "record-b", "REVIEW", 0.6),
+        ))
+        materials_route.registry.review.add(ReviewItem(
+            "review-2", "record-b", "record-c",
+            AIDecision("record-b", "record-c", "REVIEW", 0.6),
+        ))
+        metrics = materials_route._review_metrics()
+    finally:
+        materials_route.registry = previous
+    assert metrics["pending_review_pairs"] == 2
+    assert metrics["unique_materials_requiring_review"] == 3
+    assert metrics["unique_materials_requiring_review"] <= 3
 
 
 def test_actual_10k_cpse_upload_accounts_rows_and_mappings():

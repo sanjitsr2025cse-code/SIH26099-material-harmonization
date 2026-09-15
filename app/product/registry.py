@@ -241,3 +241,82 @@ class MaterialRegistry:
         return {"records": len(self.records), "canonical_materials": len(self.canonicals),
                 "mappings": len(self.mappings), "mapping_history": len(self.mapping_history),
                 "pending_reviews": len(self.candidates())}
+
+    # ---- Rich CNMC view models for the API layer ----
+
+    def cnmc_details(self) -> list[dict[str, Any]]:
+        """Build rich CNMC view models with source materials and CPSE provenance."""
+        # Pre-build decision lookup by record_id for fast access
+        decision_by_record: dict[str, list[AIDecision]] = defaultdict(list)
+        for d in self.decisions:
+            decision_by_record[d.left_id].append(d)
+            decision_by_record[d.right_id].append(d)
+
+        results: list[dict[str, Any]] = []
+        for material in self.list_canonicals():
+            member_set = set(material.member_ids)
+            source_materials: list[dict[str, Any]] = []
+            cpses: set[str] = set()
+
+            for member_id in material.member_ids:
+                record = self.records.get(member_id, {})
+                source = str(record.get("source_system", record.get("source", "unknown")))
+                cpses.add(source)
+
+                # Find best EQUIVALENT decision for this member within the group
+                best_confidence: float | None = None
+                member_decision = "EQUIVALENT" if len(member_set) > 1 else None
+                for d in decision_by_record.get(member_id, []):
+                    other = d.right_id if d.left_id == member_id else d.left_id
+                    if other in member_set and d.decision == "EQUIVALENT":
+                        if best_confidence is None or d.confidence > best_confidence:
+                            best_confidence = d.confidence
+
+                source_materials.append({
+                    "record_id": member_id,
+                    "source": source,
+                    "material_code": str(record.get("material_code", member_id)),
+                    "original_description": str(record.get("original_description",
+                        record.get("description", ""))),
+                    "attributes": record.get("extracted_attributes",
+                        record.get("attributes", {})) or {},
+                    "confidence": best_confidence,
+                    "decision": member_decision,
+                })
+
+            canonical = material.record
+            results.append({
+                "cnmc_id": material.cnmc_id,
+                "canonical_description": str(canonical.get("normalized_description",
+                    canonical.get("description", ""))),
+                "original_description": str(canonical.get("original_description",
+                    canonical.get("description", ""))),
+                "harmonized_attributes": canonical.get("extracted_attributes",
+                    canonical.get("attributes", {})) or {},
+                "category": str(canonical.get("material_category",
+                    canonical.get("category", "")) or ""),
+                "member_count": len(material.member_ids),
+                "cpses": sorted(cpses),
+                "status": "GOVERNED",
+                "source_materials": source_materials,
+            })
+        return results
+
+    def cpse_coverage(self) -> list[dict[str, Any]]:
+        """Calculate per-CPSE statistics from actual registry data."""
+        coverage: dict[str, dict[str, Any]] = {}
+        for record in self.records.values():
+            source = str(record.get("source_system", record.get("source", "unknown")))
+            if source not in coverage:
+                coverage[source] = {"cpse": source, "record_count": 0, "cnmc_count": 0}
+            coverage[source]["record_count"] += 1
+        for material in self.canonicals.values():
+            sources: set[str] = set()
+            for member_id in material.member_ids:
+                record = self.records.get(member_id, {})
+                source = str(record.get("source_system", record.get("source", "unknown")))
+                sources.add(source)
+            for source in sources:
+                if source in coverage:
+                    coverage[source]["cnmc_count"] += 1
+        return sorted(coverage.values(), key=lambda x: x["cpse"])

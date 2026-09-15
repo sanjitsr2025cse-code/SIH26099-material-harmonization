@@ -6,9 +6,16 @@ export type Statistics = {
   pending_reviews: number
 }
 
+export type CpseCoverage = {
+  cpse: string
+  record_count: number
+  cnmc_count: number
+}
+
 export type Overview = {
   statistics: Statistics
   decision_counts: Record<string, number>
+  cpse_coverage: CpseCoverage[]
   health: string
 }
 
@@ -20,10 +27,34 @@ export type Review = {
   ai_decision: { confidence: number; decision: string; explanation: string[] }
 }
 
-export type Canonical = {
+export type SourceMaterial = {
+  record_id: string
+  source: string
+  material_code: string
+  original_description: string
+  attributes: Record<string, unknown>
+  confidence: number | null
+  decision: string | null
+}
+
+export type CnmcDetail = {
   cnmc_id: string
-  record: Record<string, unknown>
-  member_ids: string[]
+  canonical_description: string
+  original_description: string
+  harmonized_attributes: Record<string, unknown>
+  category: string
+  member_count: number
+  cpses: string[]
+  status: string
+  source_materials: SourceMaterial[]
+}
+
+export type CanonicalsResponse = {
+  items: CnmcDetail[]
+  total: number
+  page: number
+  page_size: number
+  pages: number
 }
 
 export type Mapping = {
@@ -35,13 +66,23 @@ export type Mapping = {
   sequence: number
 }
 
+export type BenchmarkJob = {
+  job_id: string
+  status: 'queued' | 'running' | 'completed' | 'failed' | 'none'
+  dataset_size: number
+  result: Record<string, unknown> | null
+  error: string | null
+  started_at: number | null
+  completed_at: number | null
+}
+
 const configuredBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 const baseUrl = (configuredBaseUrl || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000` : 'http://127.0.0.1:8000')).replace(/\/$/, '')
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response
   const controller = new AbortController()
-  const timeout = window.setTimeout(() => controller.abort(), 10000)
+  const timeout = window.setTimeout(() => controller.abort(), 15000)
   try {
     response = await fetch(`${baseUrl}${path}`, { ...init, signal: controller.signal, headers: { Accept: 'application/json', ...init?.headers } })
   } catch (error) {
@@ -66,9 +107,16 @@ export const materialsApi = {
   decide: (id: string, action: 'APPROVE' | 'REJECT') => request<Review>(`/api/materials/reviews/${encodeURIComponent(id)}/decision`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, reviewer: 'Admin' }),
   }),
-  canonicals: (search = '') => request<{ items: Canonical[] }>(`/api/materials/canonicals?${new URLSearchParams({ search })}`),
+  canonicals: (search = '', cpse = '', category = '', page = 1, pageSize = 50) =>
+    request<CanonicalsResponse>(`/api/materials/canonicals?${new URLSearchParams({
+      search, cpse, category, page: String(page), page_size: String(pageSize),
+    })}`),
   mappings: () => request<{ items: Mapping[] }>('/api/materials/mappings'),
-  benchmark: () => request<Record<string, unknown>>('/api/materials/benchmark'),
+  startBenchmark: (size = 2000) => request<BenchmarkJob>('/api/materials/benchmark/start', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ size }),
+  }),
+  benchmarkStatus: (jobId: string) => request<BenchmarkJob>(`/api/materials/benchmark/${encodeURIComponent(jobId)}`),
+  benchmarkLatest: () => request<BenchmarkJob>('/api/materials/benchmark/latest'),
   demo: () => request<Record<string, unknown>>('/api/materials/demo'),
   upload: (file: File) => {
     const body = new FormData()

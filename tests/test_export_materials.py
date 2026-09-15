@@ -16,6 +16,7 @@ def test_export_script_writes_benchmark_fields(tmp_path):
         "material_code",
         "description",
         "attributes",
+        "category",
         "ground_truth_group",
         "variant",
     } == set(rows[0])

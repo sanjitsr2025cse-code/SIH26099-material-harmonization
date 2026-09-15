@@ -11,3 +11,7 @@ dist/
 build/
 *.egg-info/
 .DS_Store
+node_modules/
+web/node_modules/
+web/.next/
+web/next-env.d.ts

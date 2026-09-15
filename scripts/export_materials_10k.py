@@ -21,6 +21,7 @@ def export_dataset(output: Path = OUTPUT, size: int = 10_000) -> Path:
         "material_code",
         "description",
         "attributes",
+        "category",
         "ground_truth_group",
         "variant",
     ]

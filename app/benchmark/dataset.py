@@ -22,6 +22,34 @@ _FAMILIES = (
     ("motor", "INDUCTION MOTOR 5 KW 415 V", {"size": "5 kW", "voltage": "415 V"}),
 )
 
+_CPSES = (
+    ("NTPC", "NTPC"),
+    ("BHEL", "BHEL"),
+    ("IOCL", "IOCL"),
+    ("ONGC", "ONGC"),
+    ("GAIL", "GAIL"),
+    ("SAIL", "SAIL"),
+    ("Coal India", "CIL"),
+    ("Power Grid", "PGCIL"),
+    ("BPCL", "BPCL"),
+    ("HPCL", "HPCL"),
+)
+
+_CATEGORIES: dict[str, str] = {
+    "bolt_b": "Fasteners",
+    "bolt_c": "Fasteners",
+    "bolt_m12": "Fasteners",
+    "nut_m10": "Fasteners",
+    "washer": "Fasteners",
+    "pipe": "Piping",
+    "valve": "Valves",
+    "cable": "Electrical",
+    "bearing": "Bearings",
+    "flange": "Piping",
+    "gasket": "Sealing",
+    "motor": "Electrical",
+}
+
 _ABBREVIATIONS = {"STEEL": "STL", "BOLT": "BLT", "GRADE": "GR", "PRESSURE": "P", "VOLTAGE": "V"}
 _TRANSLATIONS = {
     "bolt_b": "БОЛТ СТАЛЬ M10 КЛАСС B",
@@ -44,14 +72,17 @@ def generate_dataset(size: int = 10_000, seed: int = 10_000) -> list[dict[str, A
     records: list[dict[str, Any]] = []
     for index in range(size):
         family_id, canonical, attrs = _FAMILIES[index % len(_FAMILIES)]
+        cpse_name, cpse_code = _CPSES[index % len(_CPSES)]
         variant = ("exact", "near_duplicate", "abbreviation", "multilingual",
                    "unit_format", "terminology", "unrelated")[index % 7]
+        category = _CATEGORIES.get(family_id, "General")
         # A deterministic set of unrelated products exercises false-positive safety.
         if variant == "unrelated":
             unrelated_number = index // len(_FAMILIES)
             family_id = f"unrelated_{unrelated_number}"
             canonical = f"UNRELATED MATERIAL {unrelated_number} CERAMIC LINER"
             attrs = {"size": f"{100 + unrelated_number} mm", "standard": "CPSE-OTHER"}
+            category = "General"
         description = canonical
         if variant == "near_duplicate":
             description = canonical.replace("STEEL", "CARBON STEEL").replace("BOLT", "HEX BOLT")
@@ -69,10 +100,11 @@ def generate_dataset(size: int = 10_000, seed: int = 10_000) -> list[dict[str, A
             pass
         records.append({
             "record_id": f"cpse-{index + 1:05d}",
-            "source": ("erp", "catalogue", "maintenance")[index % 3],
-            "material_code": f"{family_id.upper()}-{index + 1:05d}",
+            "source": cpse_name,
+            "material_code": f"{cpse_code}-{index + 1:05d}",
             "description": description,
             "attributes": dict(attrs),
+            "category": category,
             "ground_truth_group": family_id,
             "variant": variant,
         })
@@ -96,6 +128,7 @@ def demo_dataset_csv(size: int = 10_000, seed: int = 10_000) -> bytes:
         "material_code",
         "description",
         "attributes",
+        "category",
         "ground_truth_group",
         "variant",
     ]
